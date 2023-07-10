@@ -1,0 +1,6 @@
+{
+    "license": "MIT",
+    "require": {
+        "ipinfo/ipinfo": "^3.0"
+    }
+}
