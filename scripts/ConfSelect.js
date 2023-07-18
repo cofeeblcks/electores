@@ -11,11 +11,11 @@ $(document).ready(function () {
 })
 
 // Funciones para cargar los selects
-function cargarSelect(idSelect, multiple, placeholder, id = null, modal = null, peticion = null, tagify = false, nameVariable = 'arrayTagify') {
+function cargarSelect(idSelect, multiple, placeholder, id = null, modal = null, peticion = null, all = false, tagify = false, nameVariable = 'arrayTagify') {
 	var dropdownParent = modal == null ? $(document.body) : $("#" + modal + ">.modal-dialog>.modal-content");
 	peticion = peticion == null ? idSelect : peticion;
 	$.ajax({
-		data: { select: "select" + peticion, id: id }, //datos a enviar a la url
+		data: { select: "select" + peticion, id: id, all: all }, //datos a enviar a la url
 		dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
 		url: urlBase + "php/controller/ControllerSelect.php", //url a donde hacemos la peticion
 		type: "POST",

@@ -11,6 +11,7 @@ class ModelLogin
         $documento = mysqli_real_escape_string($mysqli, $documento);
 
         $sql = "SELECT
+        rol AS id_rol,
         id_usuario,
         contrasenia,
         CONCAT(nombres,' ',apellidos) AS usuario
@@ -22,6 +23,7 @@ class ModelLogin
         if (mysqli_num_rows($rtdo) == 1) {
             $data = mysqli_fetch_object($rtdo);
             $idUsuario = $data->id_usuario;
+            $idRol = $data->id_rol;
             $usuario = $data->usuario;
             $contraseniaBD = $data->contrasenia;
 
@@ -34,7 +36,7 @@ class ModelLogin
             // echo $sql;exit;
             $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
 
-            if ( mysqli_num_rows($rtdo) == 1 || $idUsuario == 1 ) {
+            if ( mysqli_num_rows($rtdo) == 1 || $idRol == 1 ) {
                 $verificarContrasenia = Utilidades::VerificarHash($contrasenia, $contraseniaBD);
                 if ($verificarContrasenia) {
                     $respuesta['status'] = "1";
@@ -73,6 +75,7 @@ class ModelLogin
         if (mysqli_affected_rows($mysqli) == 1) {
             $respuesta['status'] = 1;
             mysqli_commit($mysqli);
+            ModelLog::Auditoria($idUsuario, "INICIO DE SESIÓN", $mysqli);
         } else {
             $respuesta['status'] = 0;
         }
@@ -93,6 +96,7 @@ class ModelLogin
 
         if (mysqli_affected_rows($mysqli) == 1) {
             mysqli_commit($mysqli);
+            ModelLog::Auditoria($idUsuario, "CIERRE DE SESIÓN", $mysqli);
             $respuesta = Sesion::CerrarSesion();
         } else {
             $respuesta['status'] = 0;

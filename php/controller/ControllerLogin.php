@@ -8,6 +8,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Sesion.php');
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Validaciones.php');
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Utilidades.php');
+        require_once(rutaBase . 'php' . DS . 'model' . DS . 'ModelLog.php');
         require_once(rutaBase . 'php' . DS . 'model' . DS . 'ModelLogin.php');
         require_once(rutaBase . 'php' . DS . 'conexion' . DS . 'Conexion.php');
         $conexion = new Conexion();

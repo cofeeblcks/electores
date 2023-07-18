@@ -17,7 +17,7 @@ class ModelEliminaciones
 			$respuesta['status'] = '1';
 			// Log
 			require_once(rutaBase.'php'.DS.'model'.DS.'ModelLog.php');
-			ModelLog::Log(4, $tabla, $sql, "ELIMINADO: ".$id." - MOTIVO: ".$motivo, $idUsuario, $mysqli);
+			// ModelLog::Log(4, $tabla, $sql, "ELIMINADO: ".$id." - MOTIVO: ".$motivo, $idUsuario, $mysqli);
             mysqli_commit($mysqli);
 		}else{
 			$respuesta['status'] = '0';

@@ -19,11 +19,21 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     break;
 
                 case 'selectSemaforo':
-                    echo ModelSelect::SelectHtml("semaforos", "id_semaforo", "descripcion", $mysqli);
+                    $all = isset($_POST['all']) ? filter_var(trim($_POST['all']), FILTER_VALIDATE_BOOLEAN) : false;
+                    echo ModelSelect::SelectHtml("semaforos", "id_semaforo", "descripcion", $mysqli, "color", $all);
                     break;
 
                 case 'selectEstados':
                     echo ModelSelect::SelectHtml("estados", "id_estado", "descripcion", $mysqli);
+                    break;
+
+                case 'selectInformacionVotacion':
+                    echo ModelSelect::SelectHtml("informacion_votaciones", "id_informacion_votacion", "CONCAT('ZZ: ',zona,'; PP: ',puesto,'; ',direccion,'; Mesa ',mesa)", $mysqli);
+                    break;
+
+                case 'selectLideres':
+                    $id = isset($_POST['id']) ? filter_var(trim($_POST['id']), FILTER_VALIDATE_INT) : NULL;
+                    echo ModelSelect::SelectLideres($id, $mysqli);
                     break;
 
                 default:

@@ -43,10 +43,51 @@ include_once('php/includes/template.php');
                                     </div>
                                     <div class="col-md-12 col-sm-12 col-xs-12 form-group">
                                         <div class="input-group">
-                                            <span class="input-group-append">
-                                                <label class="input-group-text"><i class="ik ik-search"></i></label>
+                                            <span class="input-group-append" onclick="showRegistros();">
+                                                <label class="input-group-text cursor-pointer"><i class="ik ik-search"></i></label>
                                             </span>
                                             <input type="text" class="form-control" id="filtroRegistro" placeholder="Ingresa el texto a buscar" onkeydown="pulsaEnter(event,this.id)">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-2">
+                        <div class="card card-state card-state-success">
+                            <div class="card-header">
+                                <h3>Filtro por Semoforo</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-3">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 container-semaforo">
+                                                <select onchange="showRegistros();" id="selectFiltroSemaforos" class="form-control select2 selectSemaforo w-100"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-2">
+                        <div class="card card-state card-state-success">
+                            <div class="card-header">
+                                <h3>Filtro por sexo</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-3">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 container-semaforo">
+                                                <select onchange="showRegistros();" id="selectFiltroSexo" class="form-control select w-100">
+                                                    <option value=""></option>
+                                                    <option value="0">TODOS</option>
+                                                    <option value="F">FEMENINO</option>
+                                                    <option value="M">MASCULINO</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -59,8 +100,8 @@ include_once('php/includes/template.php');
                         <h3>Listado Electores</h3>
                         <div class="card-header-right crud-card">
                             <ul class="list-unstyled d-flex">
-                                <li class="d-flex align-items-center"><a class="btn btn-theme-purple btn-block" onclick="modelRegistro(0);" style="font-size: 1rem;padding: 0 15px;"><i class="fa-solid fa-building-user color-blanco"></i> Crear lider</a></li>
-                                <li class="d-flex align-items-center"><a class="btn btn-theme-blue btn-block" onclick="modelRegistro(1);" style="font-size: 1rem;padding: 0 15px;"><i class="fa-solid fa-building-user color-blanco"></i> Crear elector</a></li>
+                                <li class="d-flex align-items-center"><a class="btn btn-theme-blue btn-block" onclick="modelRegistro(0);" style="font-size: 1rem;padding: 0 15px;"><i class="fa-solid fa-building-user color-blanco"></i> Crear elector</a></li>
+                                <li class="d-flex align-items-center"><a class="btn btn-theme-purple btn-block" onclick="modelRegistro(1);" style="font-size: 1rem;padding: 0 15px;"><i class="fa-solid fa-building-user color-blanco"></i> Crear lider</a></li>
                                 <li class="d-flex align-items-center"><a class="btn btn-theme-green btn-block" onclick="showRegistros();" style="font-size: 1rem;padding: 0 15px;"><i class="fa-solid fa-arrows-rotate color-blanco"></i> Actualizar lista</a></li>
                             </ul>
                         </div>
