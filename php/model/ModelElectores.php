@@ -2,7 +2,7 @@
 ini_set('display_errors', 1);
 class ModelElectores
 {
-    public static function BuscarRegistro($pagina, $numeroitems, $filtro, $filtroPor, $orden, $filtroSemaforo, $filtroSexo, $mysqli)
+    public static function BuscarRegistro($pagina, $numeroitems, $filtro, $filtroPor, $orden, $filtroSemaforo, $filtroSexo, $rol, $mysqli)
     {
         //limpiamos los datos
         $filtro = mysqli_real_escape_string($mysqli, mb_convert_encoding($filtro, 'ISO-8859-1'));
@@ -13,6 +13,8 @@ class ModelElectores
 
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Fechas.php');
         $formatoFechas = new fechas();
+
+        $isAdmin = $rol == 1 ? true : false;
 
         switch ($orden) {
             case 0:
@@ -138,7 +140,8 @@ class ModelElectores
             COUNT(RL.id_registro_llamada)
             FROM registros_llamadas RL
             WHERE RL.id_elector = E.id_elector
-        ) AS llamadas
+        ) AS llamadas,
+        CONCAT('ZZ: ',IV.zona,'; PP: ',IV.puesto,'; ',IV.direccion,'; Mesa ',IV.mesa) as puesto_votacion
         FROM electores E
         JOIN usuarios U ON U.id_usuario = E.id_usuario
         JOIN semaforos S ON S.id_semaforo = E.id_semaforo
@@ -160,8 +163,8 @@ class ModelElectores
                 $nombre = $data['nombre'];
                 $documento = $data['documento'];
                 $sexo = $data['sexo'];
-                $telefono = $data['telefono'];
-                $edad = $data['edad']. " AÑOS";
+                $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
+                $edad = $data['edad'] . " AÑOS";
                 $direccion = $data['direccion'];
                 $usuario = $data['usuario'];
                 $fecha = $formatoFechas->formato4($data['fecha']) . "<br>" . $usuario;
@@ -172,11 +175,9 @@ class ModelElectores
                 $esLider = $data['es_lider'];
                 $referidos = $data['referidos'];
                 $llamadas = $data['llamadas'];
+                $puestoVotacion = $data['puesto_votacion'];
 
                 $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
-
-                $crud = '<a class="btn-acciones cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver" onclick="datosCliente(' . $id . ',false);"><i class="ik ik-eye color-orange"></i></a>';
-                $crud .= '<a class="btn-acciones cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="Actualizar" onclick="datosCliente(' . $id . ',true);"><i class="fa-solid fa-pen-to-square color-verde"></i></a>';
 
                 $tabla = 'electores';
 
@@ -190,10 +191,16 @@ class ModelElectores
                     $estadoReferidos = '
                     <div class="group-btns d-flex justify-content-center">
                         <span class="cursor-pointer badge ' . $colorReferido . ' mr-5" onclick="listaReferidos(' . $id . ')" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver referidos">' . $referidos . ' referidos</span>
-                        <span class="cursor-pointer" onclick="modelRegistro(0, ' . $id . ', '.$idLider.', \'' . $nombre . '\');" data-bs-toggle="tooltip" data-bs-placement="right" title="Registrar referido">
+                        <span class="cursor-pointer" onclick="modelRegistro(0, ' . $id . ', ' . $idLider . ', \'' . $nombre . '\');" data-bs-toggle="tooltip" data-bs-placement="right" title="Registrar referido">
                             <i class="fa-solid fa-circle-plus fa-2x color-verde"></i>
                         </span>
                     </div>';
+                }
+
+                $crud = '';
+                if ($isAdmin) {
+                    $crud = '<a class="cursor-pointer badge bg-orange mb-5" data-bs-toggle="tooltip" data-bs-placement="left" title="Ver datos del elector" onclick="datosElector(' . $id . ', ' . $esLider . ', false, ' . $isAdmin . ');"><i class="ik ik-eye color-blanco"></i> Ver datos</a><br>';
+                    $crud .= '<a class="cursor-pointer badge bg-verde" data-bs-toggle="tooltip" data-bs-placement="left" title="Editar datos del elector" onclick="datosElector(' . $id . ', ' . $esLider . ', true, ' . $isAdmin . ');"><i class="fa-solid fa-pen-to-square color-blanco"></i> Editar datos</a>';
                 }
 
                 $colorLlamada = 'bg-rojo';
@@ -208,9 +215,10 @@ class ModelElectores
                     </span>
                 </div>';
 
-                $respuesta = array($esLider, $fecha, $documento, $nombre, $telefono, $edad, $sexo, $direccion, $btnSemaforo, $sector, $estadoReferidos, $estadoLlamada, $crud);
+                $respuesta = array($esLider, $fecha, $documento, $nombre, $telefono, $edad, $sexo, $direccion, $btnSemaforo, $sector, $puestoVotacion, $estadoReferidos, $estadoLlamada, $crud);
                 $arrayrespuesta['datos'][] = $respuesta;
             }
+            $arrayrespuesta['isAdmin'] = $isAdmin;
             $arrayrespuesta['paginador'] = array(
                 'totalRegistros' => $num_total_registros,
                 'total_paginas' => $total_paginas,
@@ -242,7 +250,7 @@ class ModelElectores
         $fechaNacimiento,
         $semaforo,
         $idLider,
-        $usuario,
+        $idUsuario,
         $mysqli
     ) {
         $nombres = mysqli_real_escape_string($mysqli, $nombres);
@@ -265,8 +273,8 @@ class ModelElectores
             if (!is_numeric($idSector)) {
                 // Si no es numerico, posiblemente sea texto agregado que no existe
                 if (!empty($idSector)) {
-                    $rtaSector = self::RegistroSectorLideres(mb_strtoupper($idSector), $mysqli);
-                    if ($rtaSector['status'] == 1) {
+                    $rtaSector = self::RegistroSectorLideres(mb_strtoupper($idSector), $idUsuario, $mysqli);
+                    if ($rtaSector['status']) {
                         $idSector = $rtaSector['id'];
                     }
                 }
@@ -274,7 +282,7 @@ class ModelElectores
         }
 
         $sql = "INSERT INTO electores(id_usuario, id_semaforo, id_informacion_votacion, nombres, apellidos, documento, sexo, telefono, direccion, observacion, fecha_nacimiento)
-        SELECT $usuario, $semaforo, $puestoVotacion, '$nombres', '$apellidos', '$documento', '$sexo', '$telefono', '$direccion', '$observacion', '$fechaNacimiento'
+        SELECT $idUsuario, $semaforo, $puestoVotacion, '$nombres', '$apellidos', '$documento', '$sexo', '$telefono', '$direccion', '$observacion', '$fechaNacimiento'
         WHERE NOT EXISTS (
             SELECT 1 FROM electores WHERE documento = '$documento'
         );";
@@ -283,16 +291,22 @@ class ModelElectores
 
         if (mysqli_affected_rows($mysqli) == 1) {
             $idElector = mysqli_insert_id($mysqli);
+            $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+            ModelLog::Auditoria($idUsuario, "REGISTRO DE ELECTOR: $nombres $apellidos ($documento) - ID $idElector - SQL $sql", 1, $mysqli);
             $respuesta['status'] = 1;
 
             switch ($tipo) {
                 case 0:
-                    if( !empty($idLider) ){
+                    if (!empty($idLider)) {
                         $sql = "INSERT INTO referidos(id_lider, id_elector)
                         SELECT $idLider, $idElector
                         WHERE NOT EXISTS (
                             SELECT 1 FROM referidos WHERE id_elector = $idElector
                         );";
+                        mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+                        $id = mysqli_insert_id($mysqli);
+                        $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+                        ModelLog::Auditoria($idUsuario, "REGISTRO DE REFERIDO: $nombres $apellidos ($documento) - ID $id - SQL $sql", 1, $mysqli);
                     }
                     break;
 
@@ -302,9 +316,12 @@ class ModelElectores
                     WHERE NOT EXISTS (
                         SELECT 1 FROM lideres WHERE id_elector = $idElector
                     );";
+                    mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+                    $id = mysqli_insert_id($mysqli);
+                    $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+                    ModelLog::Auditoria($idUsuario, "REGISTRO DE LIDER: $nombres $apellidos ($documento) - ID $id - SQL $sql", 1, $mysqli);
                     break;
             }
-            mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
             mysqli_commit($mysqli);
         } else {
             $respuesta['status'] = 0;
@@ -315,28 +332,151 @@ class ModelElectores
         return json_encode($respuesta);
     }
 
+    public static function Actualizar(
+        $idElector,
+        $nombres,
+        $apellidos,
+        $documento,
+        $direccion,
+        $telefono,
+        $sexo,
+        $sectorLider,
+        $observacion,
+        $puestoVotacion,
+        $fechaNacimiento,
+        $semaforo,
+        $idLider,
+        $isLider,
+        $idUsuario,
+        $rol,
+        $mysqli
+    ) {
+        $nombres = mysqli_real_escape_string($mysqli, $nombres);
+        $apellidos = mysqli_real_escape_string($mysqli, $apellidos);
+        $documento = mysqli_real_escape_string($mysqli, $documento);
+        $direccion = mysqli_real_escape_string($mysqli, $direccion);
+        $telefono = mysqli_real_escape_string($mysqli, $telefono);
+        $sexo = mysqli_real_escape_string($mysqli, $sexo);
+        $observacion = mysqli_real_escape_string($mysqli, $observacion);
+        $fechaNacimiento = mysqli_real_escape_string($mysqli, $fechaNacimiento);
+        $puestoVotacion = mysqli_real_escape_string($mysqli, $puestoVotacion);
+        $semaforo = mysqli_real_escape_string($mysqli, $semaforo);
+        $idLider = mysqli_real_escape_string($mysqli, $idLider);
+        $sectorLider = mysqli_real_escape_string($mysqli, $sectorLider);
+
+        $arrayDataSectorLider = explode(")", $sectorLider);
+        $idSector = trim($arrayDataSectorLider[0]);
+        if (!is_numeric($idSector)) {
+            // Si no es numerico, posiblemente sea texto agregado que no existe
+            if (!empty($idSector)) {
+                $rtaSector = self::RegistroSectorLideres(mb_strtoupper($idSector), $idUsuario, $mysqli);
+                if ($rtaSector['status']) {
+                    $idSector = $rtaSector['id'];
+                }
+            }
+        } else {
+            $idSector = null;
+        }
+
+        $updateMore = "";
+        if ($rol == 1) {
+            $updateMore = "documento = '$documento',
+            id_informacion_votacion = $puestoVotacion,";
+        }
+
+        $sql = "UPDATE electores
+        SET
+        $updateMore
+        nombres = '$nombres',
+        apellidos = '$apellidos',
+        sexo = '$sexo',
+        telefono = '$telefono',
+        direccion = '$direccion',
+        observacion = '$observacion',
+        fecha_nacimiento = '$fechaNacimiento'
+        WHERE id_elector = $idElector;";
+        // echo $sql;exit;
+        mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+
+        if (mysqli_affected_rows($mysqli) > 0) {
+            $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+            ModelLog::Auditoria($idUsuario, "ACTUALIZA DATOS DEL ELECTOR: $nombres $apellidos ($documento) - SQL $sql", 2, $mysqli);
+        }
+
+        if ($isLider && !empty($idSector)) {
+            $sql = "UPDATE lideres
+            SET
+            id_sector_lider = $idSector
+            WHERE id_elector = $idElector
+            AND id_sector_lider <> $idSector;";
+            // echo $sql;exit;
+            mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+            if (mysqli_affected_rows($mysqli) == 1) {
+                $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+                ModelLog::Auditoria($idUsuario, "ACTUALIZA SECTOR DEL LIDER: $nombres $apellidos ($documento) - SQL $sql", 2, $mysqli);
+            }
+        }
+
+        if (!$isLider) {
+            $sql = "UPDATE referidos 
+            SET 
+            id_lider = (SELECT id_lider FROM lideres WHERE id_elector = $idLider)
+            WHERE id_elector = $idElector
+            AND id_lider <> $idLider;";
+            // echo $sql;exit;
+            mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+            if (mysqli_affected_rows($mysqli) == 1) {
+                $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+                ModelLog::Auditoria($idUsuario, "ACTUALIZA REFERIDO DEL ELECTOR: $nombres $apellidos ($documento) - SQL $sql", 2, $mysqli);
+            }else{
+                $sql = "INSERT INTO referidos(id_lider, id_elector)
+                SELECT (SELECT id_lider FROM lideres WHERE id_elector = $idLider), $idElector
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM referidos WHERE id_elector = $idElector
+                );";
+                // echo $sql;exit;
+                mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
+                $id = mysqli_insert_id($mysqli);
+                $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+                ModelLog::Auditoria($idUsuario, "REGISTRO DE REFERIDO: $nombres $apellidos ($documento) - ID $id - SQL $sql", 1, $mysqli);
+            }
+        }
+
+        $respuesta['status'] = 1;
+        
+        mysqli_commit($mysqli);
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
     // Busqueda completa de datos especificos
     public static function DatosElector($idElector, $mysqli)
     {
         //limpiamos los datos
         $idElector = mysqli_real_escape_string($mysqli, mb_convert_encoding($idElector, 'ISO-8859-1'));
 
-        $sql = "SELECT 
-        C.*
-        FROM clientes C
-        WHERE C.id_cliente = $idElector;";
+        $sql = "SELECT
+        E.*,
+        LR.id_elector AS id_lider,
+        CONCAT(SL.id_sector_lider,') ',SL.sector) AS sector_tag
+        FROM electores E
+        LEFT JOIN lideres L ON L.id_elector = E.id_elector
+        LEFT JOIN sectores_lideres SL ON SL.id_sector_lider = L.id_sector_lider
+        LEFT JOIN referidos R ON R.id_elector = E.id_elector
+        LEFT JOIN lideres LR ON LR.id_lider = R.id_lider
+        WHERE E.id_elector = $idElector;";
 
         $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
 
         if (mysqli_num_rows($rtdo) > 0) {
-            $respuesta['status'] = '1';
+            $respuesta['status'] = 1;
             $data = mysqli_fetch_object($rtdo);
             foreach ($data as $columna => $valor) {
                 $respuesta[$columna] = $valor;
             }
             mysqli_commit($mysqli);
         } else {
-            $respuesta['status'] = '0';
+            $respuesta['status'] = 0;
             mysqli_rollback($mysqli);
         }
 
@@ -344,7 +484,142 @@ class ModelElectores
         return json_encode($respuesta);
     }
 
-    public static function RegistroSectorLideres($sector, $mysqli)
+    public static function RegistrarLlamada($idElector, $estadoLlamada, $observacion, $fecha, $idUsuario, $mysqli)
+    {
+        //limpiamos los datos
+        $idElector = mysqli_real_escape_string($mysqli, mb_convert_encoding($idElector, 'ISO-8859-1'));
+        $estadoLlamada = mysqli_real_escape_string($mysqli, mb_convert_encoding($estadoLlamada, 'ISO-8859-1'));
+        $observacion = mysqli_real_escape_string($mysqli, mb_convert_encoding($observacion, 'ISO-8859-1'));
+        $fecha = mysqli_real_escape_string($mysqli, mb_convert_encoding($fecha, 'ISO-8859-1'));
+
+        $sql = "INSERT INTO registros_llamadas(id_usuario, id_estado, id_elector, observacion, fecha_llamada) 
+        VALUES ($idUsuario, $estadoLlamada, $idElector, '$observacion', '$fecha');";
+
+        mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_affected_rows($mysqli) > 0) {
+            $respuesta['status'] = 1;
+            $id = mysqli_insert_id($mysqli);
+            $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+            ModelLog::Auditoria($idUsuario, "REGISTRO DE LLAMADA: $idElector - ID $id - SQL $sql", 1, $mysqli);
+        } else {
+            $respuesta['status'] = 0;
+        }
+
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
+    public static function ListaReferidos($idLider, $mysqli)
+    {
+        //limpiamos los datos
+        $idLider = mysqli_real_escape_string($mysqli, mb_convert_encoding($idLider, 'ISO-8859-1'));
+
+        $sql = "SELECT 
+        CONCAT(E.nombres,' ',E.apellidos) AS lider,
+        CONCAT(ER.nombres,' ',ER.apellidos) AS nombre,
+        ER.documento,
+        ER.telefono,
+        ER.direccion,
+        TIMESTAMPDIFF(YEAR, ER.fecha_nacimiento, CURDATE()) AS edad,
+        S.descripcion AS semaforo,
+        S.color,
+        CONCAT('ZZ: ',IV.zona,'; PP: ',IV.puesto,'; ',IV.direccion,'; Mesa ',IV.mesa) as puesto_votacion
+        FROM lideres L
+        JOIN electores E ON E.id_elector = L.id_elector
+        JOIN referidos R ON R.id_lider = L.id_lider
+        JOIN electores ER ON ER.id_elector = R.id_elector
+        JOIN semaforos S ON S.id_semaforo = ER.id_semaforo
+        JOIN informacion_votaciones IV ON IV.id_informacion_votacion = E.id_informacion_votacion
+        WHERE E.id_elector = $idLider;";
+
+        $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_num_rows($rtdo) > 0) {
+            $respuesta['status'] = 1;
+            $html = "";
+            while ($data = mysqli_fetch_array($rtdo)) {
+                $lider = $data['lider'];
+                $nombre = $data['nombre'];
+                $documento = $data['documento'];
+                $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
+                $edad = $data['edad'] . " AÑOS";
+                $direccion = $data['direccion'];
+                $semaforo = $data['semaforo'];
+                $color = $data['color'];
+                $puestoVotacion = $data['puesto_votacion'];
+
+                $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
+
+                $respuesta['datos'][] = array($documento, $nombre, $telefono, $edad, $direccion, $btnSemaforo, $puestoVotacion);
+            }
+            $respuesta['html'] = $html;
+            $respuesta['lider'] = $lider;
+            mysqli_commit($mysqli);
+        } else {
+            $respuesta['status'] = 0;
+            mysqli_rollback($mysqli);
+        }
+
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
+    public static function ListaRegistroLlamadas($idElector, $mysqli)
+    {
+        //limpiamos los datos
+        $idElector = mysqli_real_escape_string($mysqli, mb_convert_encoding($idElector, 'ISO-8859-1'));
+
+        $sql = "SELECT
+        CONCAT(E.nombres,' ',E.apellidos) AS nombre,
+        S.descripcion AS semaforo,
+        S.color,
+        RL.observacion,
+        DATE(RL.fecha_registro) AS fecha_registro,
+        TIME_FORMAT(RL.fecha_registro, '%H:%i') AS hroa_registro,
+        DATE(RL.fecha_llamada) AS fecha,
+        CONCAT(U.nombres,' ',U.apellidos) AS usuario
+        FROM electores E
+        JOIN semaforos S ON S.id_semaforo = E.id_semaforo
+        JOIN informacion_votaciones IV ON IV.id_informacion_votacion = E.id_informacion_votacion
+        JOIN registros_llamadas RL ON RL.id_elector = E.id_elector
+        JOIN usuarios U ON U.id_usuario = RL.id_usuario
+        JOIN estados ES ON ES.id_estado = RL.id_estado
+        WHERE E.id_elector = $idElector;";
+
+        $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_num_rows($rtdo) > 0) {
+            $respuesta['status'] = 1;
+            $html = "";
+            while ($data = mysqli_fetch_array($rtdo)) {
+                $lider = $data['lider'];
+                $nombre = $data['nombre'];
+                $documento = $data['documento'];
+                $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
+                $edad = $data['edad'] . " AÑOS";
+                $direccion = $data['direccion'];
+                $semaforo = $data['semaforo'];
+                $color = $data['color'];
+                $puestoVotacion = $data['puesto_votacion'];
+
+                $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
+
+                $respuesta['datos'][] = array($documento, $nombre, $telefono, $edad, $direccion, $btnSemaforo, $puestoVotacion);
+            }
+            $respuesta['html'] = $html;
+            $respuesta['lider'] = $lider;
+            mysqli_commit($mysqli);
+        } else {
+            $respuesta['status'] = 0;
+            mysqli_rollback($mysqli);
+        }
+
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
+    public static function RegistroSectorLideres($sector, $idUsuario, $mysqli)
     {
         //limpiamos los datos
         $sector = mysqli_real_escape_string($mysqli, mb_convert_encoding($sector, 'ISO-8859-1'));
@@ -358,10 +633,13 @@ class ModelElectores
         mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
 
         if (mysqli_affected_rows($mysqli) > 0) {
-            $respuesta['status'] = 1;
-            $respuesta['id'] = mysqli_insert_id($mysqli);;
+            $respuesta['status'] = true;
+            $id = mysqli_insert_id($mysqli);
+            $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
+            ModelLog::Auditoria($idUsuario, "REGISTRO DE SECTOR: $sector - ID $id - SQL $sql", 1, $mysqli);
+            $respuesta['id'] = $id;
         } else {
-            $respuesta['status'] = 0;
+            $respuesta['status'] = false;
         }
 
         return $respuesta;

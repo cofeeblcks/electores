@@ -43,6 +43,7 @@ class ModelLogin
                     $datosSesion = array(
                         'usuario' => $usuario,
                         'idUsuario' => $idUsuario,
+                        'rol' => $idRol,
                         "permisos" => true
                     );
                     Sesion::CrearSesion($datosSesion);
@@ -75,7 +76,7 @@ class ModelLogin
         if (mysqli_affected_rows($mysqli) == 1) {
             $respuesta['status'] = 1;
             mysqli_commit($mysqli);
-            ModelLog::Auditoria($idUsuario, "INICIO DE SESIÓN", $mysqli);
+            ModelLog::Auditoria($idUsuario, "INICIO DE SESIÓN", 4, $mysqli);
         } else {
             $respuesta['status'] = 0;
         }
@@ -96,7 +97,7 @@ class ModelLogin
 
         if (mysqli_affected_rows($mysqli) == 1) {
             mysqli_commit($mysqli);
-            ModelLog::Auditoria($idUsuario, "CIERRE DE SESIÓN", $mysqli);
+            ModelLog::Auditoria($idUsuario, "CIERRE DE SESIÓN", 4, $mysqli);
             $respuesta = Sesion::CerrarSesion();
         } else {
             $respuesta['status'] = 0;

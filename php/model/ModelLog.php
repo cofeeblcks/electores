@@ -6,22 +6,23 @@ ini_set('display_errors', 1);
 
 class ModelLog
 {
-    public static function Auditoria($idUsuario, $actividad, $mysqli)
+    public static function Auditoria($idUsuario, $actividad, $tipoAuditoria, $mysqli)
     {
         $idUsuario = mysqli_real_escape_string($mysqli, $idUsuario);
         $actividad = mysqli_real_escape_string($mysqli, $actividad);
+        $tipoAuditoria = mysqli_real_escape_string($mysqli, $tipoAuditoria);
         $idSesion = session_id();
 
-        $sql = "INSERT INTO auditorias(id_usuario, actividad, session_id)
-        VALUES ($idUsuario, '$actividad', '$idSesion')";
+        $sql = "INSERT INTO auditorias(id_usuario, id_tipo_auditoria, actividad, session_id)
+        VALUES ($idUsuario, $tipoAuditoria, '$actividad', '$idSesion')";
         // echo $sql;exit;
         mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
 
         if (mysqli_affected_rows($mysqli) == 1) {
-            $respuesta['status'] = 1;
+            $respuesta['status'] = true;
             mysqli_commit($mysqli);
         } else {
-            $respuesta['status'] = 0;
+            $respuesta['status'] = false;
         }
 
         return $respuesta;

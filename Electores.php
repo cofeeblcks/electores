@@ -24,24 +24,24 @@ include_once('php/includes/template.php');
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
-                    <div class="col-xs-12 col-md-6 col-lg-5">
+                    <div class="col-xs-12 col-md-6 col-lg-3">
                         <div class="card card-state card-state-success">
                             <div class="card-header">
-                                <h3>Filtro por</h3>
+                                <div class="row w-100">
+                                    <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                        <h3>Filtro por</h3>
+                                    </div>
+                                    <label class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                        <input type="radio" name="filtroRegistroPor" class="rbtnFiltroRegistroPor rbtnVerde w-100" value="1" checked> Nombre / Apellido
+                                    </label>
+                                    <label class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                        <input type="radio" name="filtroRegistroPor" class="rbtnFiltroRegistroPor rbtnVerde w-100" value="2"> Documento
+                                    </label>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-12 col-sm-12 col-xs-12 mb-3">
-                                        <div class="row">
-                                            <label class="col-md-6 col-sm-6 col-xs-6">
-                                                <input type="radio" name="filtroRegistroPor" class="rbtnFiltroRegistroPor rbtnVerde" value="1" checked> Nombre / Apellido
-                                            </label>
-                                            <label class="col-md-6 col-sm-6 col-xs-6">
-                                                <input type="radio" name="filtroRegistroPor" class="rbtnFiltroRegistroPor rbtnVerde" value="2"> Documento
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12 col-sm-12 col-xs-12 form-group">
+                                    <div class="col-md-12 col-sm-12 col-xs-12">
                                         <div class="input-group">
                                             <span class="input-group-append" onclick="showRegistros();">
                                                 <label class="input-group-text cursor-pointer"><i class="ik ik-search"></i></label>
@@ -56,7 +56,7 @@ include_once('php/includes/template.php');
                     <div class="col-xs-12 col-md-6 col-lg-2">
                         <div class="card card-state card-state-success">
                             <div class="card-header">
-                                <h3>Filtro por Semoforo</h3>
+                                <h3>Filtro por semoforo</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row">

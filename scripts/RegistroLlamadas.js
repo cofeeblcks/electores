@@ -1,5 +1,5 @@
-function modelRegistroLlamada(idTabla, nombre, tabla) {
-	if ($.isNumeric(idTabla)) {
+function modelRegistroLlamada(idElector, nombre) {
+	if ($.isNumeric(idElector)) {
         var titulo = `Registrar llamada de <strong>${nombre}</strong>`;
 		var htmlForm = `<form id="frmRegistro" class="container">
             <div class="row recuadro mb-10 pt-10">
@@ -94,13 +94,13 @@ function modelRegistroLlamada(idTabla, nombre, tabla) {
             },
 			preConfirm: (response) => {
 				if ( validarcampos("#frmRegistro") ) {
-                    return registrarLlamada("frmRegistro", idTabla, tabla)
+                    return registrarLlamada("frmRegistro", idElector)
                         .then((response) => {
                             if (response.status == 1) {
                                 Swal.fire({
                                     icon: "success",
                                     title: titulo,
-                                    html: `<h5>Se ha registrado los datos con exito</h5>`,
+                                    html: `<h5>Se ha realizado registro de llamada con exito</h5>`,
                                     showCloseButton: true,
                                     confirmButtonColor: "#13844e",
                                     confirmButtonText: "Entendido",
@@ -125,12 +125,12 @@ function modelRegistroLlamada(idTabla, nombre, tabla) {
 	}
 }
 
-function registrarLlamada(form, idTabla, tabla) {
+function registrarLlamada(form, idElector) {
 	return new Promise((resolve, reject) => {
 		var formData = new FormData( document.getElementById(form) );
 		formData.append("peticion", "registrarLlamada");
-        formData.append("idTabla", idTabla);
-        formData.append("tabla", tabla);
+        formData.append("idElector", idElector);
+        formData.append("fecha", obtenerFechaDateDropper(1, "fechaLlamada", false));
 		$.ajax({
 			cache: false, //necesario para enviar archivos
 			contentType: false, //necesario para enviar archivos
@@ -140,14 +140,14 @@ function registrarLlamada(form, idTabla, tabla) {
 			url: urlController, //url a donde hacemos la peticion
 			type: "POST",
 			beforeSend: function () {
-				$("#overlayText").text("Registrando datos...");
+				$("#overlayText").text("Registrando llamada...");
 				$(".overlayCargue").fadeIn("slow");
 			},
 			success: function (result) {
 				var estado = result.status;
 				switch (estado) {
 					case 0:
-						reject("Ya se existe registro con ese numero de documento.");
+						reject("Ha ocurrido un error guardando la información.");
 						break;
 
 					case 1:
@@ -163,4 +163,110 @@ function registrarLlamada(form, idTabla, tabla) {
 			},
 		});
 	});
+}
+
+function listaRegistroLlamadas(idElector){
+    if ($.isNumeric(idElector)) {
+        var htmlForm = `<div class="container row">
+            <div class="col-xs-12 col-md-12 col-lg-12 recuadro mt-4">
+                <table id="dttableListadoModal" class="table w-100 ml-0 table-hover" width="100%"></table>
+            </div>
+        </div>`;
+        $.ajax({
+			data: {
+                peticion: "listaRegistroLlamadas",
+                id: idElector
+            }, //datos a enviar a la url
+			dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
+			url: urlController, //url a donde hacemos la peticion
+			type: "POST",
+			beforeSend: function () {
+				$("#overlayText").text("Consultando datos...");
+				$(".overlayCargue").fadeIn("slow");
+			},
+            complete: function(){
+                $(".overlayCargue").fadeOut("slow");
+            },
+            success:  function (result){
+                var estado = result.status;
+                switch (estado){
+                    case 0:
+                        Swal.fire({
+                            position: "top",
+                            icon: "info",
+                            title: `<strong>No existe información de registro de llamadas</strong>`,
+                            html: "",
+                            showCloseButton: false,
+                            showConfirmButton: false,
+                            confirmButtonText: "",
+                            confirmButtonColor: "",
+                            cancelButtonText: "Cerrar",
+                            cancelButtonColor: "#dc3545",
+                            showCancelButton: true,
+                            backdrop: true,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false
+                        })
+                        break;
+                    case 1:
+                        Swal.fire({
+                            position: "top",
+                            title: `<strong>Registro de llamadas del elector ${result.elector}</strong>`,
+                            html: htmlForm,
+                            showCloseButton: false,
+                            showConfirmButton: false,
+                            confirmButtonText: "",
+                            confirmButtonColor: "",
+                            cancelButtonText: "Cerrar",
+                            cancelButtonColor: "#dc3545",
+                            showCancelButton: true,
+                            backdrop: true,
+                            width: 1300,
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            willOpen: () => {
+                                // Iniciamos el datatables y el ajuste del mismo
+                                $("#dttableListadoModal").DataTable({
+                                    data: "",
+                                    columns: [
+                                        { title: "DOCUMENTO", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "NOMBRE VOTANTE", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "TELEFONO", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "EDAD", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "DIRECCIÓN", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "SEMAFORO", className: "text-center text-nowrap", responsivePriority: 1 },
+                                        { title: "PUESTO DE VOTACIÓN", className: "text-center text-nowrap", responsivePriority: 1 }
+                                    ],
+                                    responsive: true,
+                                    searching: false,
+                                    paging: false,
+                                    info: false,
+                                    ordering: false,
+                                    language: {
+                                        url: urlBase + "scripts/plugins/datatable/language/Spanish.json",
+                                    },
+                                    createdRow: function (row, data, index) {
+                                        if (index % 2) {
+                                            $(row).addClass("bg-azul-table");
+                                        }
+                                    }
+                                });
+                                if (estado == 1) {
+                                    $("#dttableListadoModal").DataTable().rows.add(result.datos).draw();
+                                }
+                            },
+                            didOpen: () => {
+                                setTimeout(() => {
+                                    $("#dttableListadoModal").DataTable().columns.adjust().draw();
+                                }, 100);
+                            },
+                        });
+                    break;
+                }
+            },
+            error: function(xhr){
+                console.log(xhr);
+            }
+        });
+    }
 }
