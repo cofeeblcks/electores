@@ -28,21 +28,19 @@
 <!-- DateDropper -->
 <script src="scripts/plugins/datedropper/datedropper.pro.min.js"></script>
 <!-- FullCalendar -->
-<script src="scripts/plugins/fullcalendar-4.3.1/packages/core/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js" integrity="sha256-8EcfIJRWyvnu/U0OsfCk05x1JGVmeC2a7sJQHrbWYSA=" crossorigin="anonymous"></script>
+<script src="scripts/plugins/fullcalendar-6.1.8/packages/core/locales/es.global.min.js"></script>
+<!-- <script src="scripts/plugins/fullcalendar-4.3.1/packages/core/main.min.js"></script>
 <script src="scripts/plugins/fullcalendar-4.3.1/packages/core/locales-all.js"></script>
 <script src="scripts/plugins/fullcalendar-4.3.1/packages/interaction/main.js"></script>
 <script src="scripts/plugins/fullcalendar-4.3.1/packages/daygrid/main.js"></script>
 <script src="scripts/plugins/fullcalendar-4.3.1/packages/timegrid/main.js"></script>
-<script src="scripts/plugins/fullcalendar-4.3.1/packages/list/main.js"></script>
+<script src="scripts/plugins/fullcalendar-4.3.1/packages/list/main.js"></script> -->
 <!-- Sweet Alert -->
 <!-- <script src="scripts/plugins/swalalert/sweetalert2@9.js"></script> -->
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Draggable -->
 <script src="scripts/plugins/sortable/Sortable.js"></script>
-
-<!-- Tag -->
-<!-- <script src="scripts/plugins/tagify/tagify.js"></script> -->
-
 <script src="scripts/plugins/tempusdominus-bootstrap-4/build/js/tempusdominus-bootstrap-4.min.js"></script>
 <script src="scripts/plugins/d3/dist/d3.min.js"></script>
 <script src="scripts/plugins/c3/c3.min.js"></script>
@@ -61,17 +59,19 @@
 <!-- Taginy -->
 <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
 <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<!-- Timepicker -->
+<script src="scripts/plugins/timepicker-ui-main/dist/timepicker-ui.umd.js"></script>
 <!-- Custom Scripts -->
 <script src="scripts/Globales.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/Login.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/Login.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/Inicio.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/Utilidades.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/Utilidades.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/Validaciones.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/ConfBootstrapmaxlenght.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/ConfBootstrapmaxlenght.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/ConfNotificaciones.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/ConfDatepicker.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/ConfDatepicker.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/ConfiCheck.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/ConfInputMask.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/ConfInputMask.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/ConfSelect.js?v=<?php echo (rand()); ?>""></script>
-<script src="scripts/ConfirmarEliminado.js?v=<?php echo (rand()); ?>""></script>
+<script src=" scripts/ConfirmarEliminado.js?v=<?php echo (rand()); ?>""></script>
 <script src="scripts/RegistroLlamadas.js?v=<?php echo (rand()); ?>""></script>

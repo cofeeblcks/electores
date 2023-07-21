@@ -12,7 +12,7 @@ class ModelElectores
         $filtroSexo = mysqli_real_escape_string($mysqli, mb_convert_encoding($filtroSexo, 'ISO-8859-1'));
 
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Fechas.php');
-        $formatoFechas = new fechas();
+        $formatoFechas = new Fechas();
 
         $isAdmin = $rol == 1 ? true : false;
 
@@ -567,25 +567,35 @@ class ModelElectores
 
     public static function ListaRegistroLlamadas($idElector, $mysqli)
     {
+        require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Fechas.php');
+        $formatoFechas = new Fechas();
         //limpiamos los datos
         $idElector = mysqli_real_escape_string($mysqli, mb_convert_encoding($idElector, 'ISO-8859-1'));
 
         $sql = "SELECT
         CONCAT(E.nombres,' ',E.apellidos) AS nombre,
+        E.documento,
+        E.direccion,
+        E.telefono,
+        TIMESTAMPDIFF(YEAR, E.fecha_nacimiento, CURDATE()) AS edad,
         S.descripcion AS semaforo,
         S.color,
         RL.observacion,
         DATE(RL.fecha_registro) AS fecha_registro,
-        TIME_FORMAT(RL.fecha_registro, '%H:%i') AS hroa_registro,
-        DATE(RL.fecha_llamada) AS fecha,
-        CONCAT(U.nombres,' ',U.apellidos) AS usuario
+        TIME_FORMAT(RL.fecha_registro, '%H:%i') AS hora_registro,
+        DATE(RL.fecha_llamada) AS fecha_llamada,
+        TIME_FORMAT(RL.fecha_llamada, '%H:%i') AS hora_llamada,
+        CONCAT(U.nombres,' ',U.apellidos) AS usuario,
+        ES.descripcion AS estado_llamada,
+        ES.color AS color_llamada
         FROM electores E
         JOIN semaforos S ON S.id_semaforo = E.id_semaforo
         JOIN informacion_votaciones IV ON IV.id_informacion_votacion = E.id_informacion_votacion
         JOIN registros_llamadas RL ON RL.id_elector = E.id_elector
         JOIN usuarios U ON U.id_usuario = RL.id_usuario
         JOIN estados ES ON ES.id_estado = RL.id_estado
-        WHERE E.id_elector = $idElector;";
+        WHERE E.id_elector = $idElector
+        ORDER BY RL.fecha_registro DESC;";
 
         $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
 
@@ -593,22 +603,37 @@ class ModelElectores
             $respuesta['status'] = 1;
             $html = "";
             while ($data = mysqli_fetch_array($rtdo)) {
-                $lider = $data['lider'];
                 $nombre = $data['nombre'];
                 $documento = $data['documento'];
+                $edad = $data['edad']." AÑOS";
                 $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
-                $edad = $data['edad'] . " AÑOS";
                 $direccion = $data['direccion'];
                 $semaforo = $data['semaforo'];
                 $color = $data['color'];
-                $puestoVotacion = $data['puesto_votacion'];
-
                 $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
 
-                $respuesta['datos'][] = array($documento, $nombre, $telefono, $edad, $direccion, $btnSemaforo, $puestoVotacion);
+                $observacion = $data['observacion'];
+                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro'])." ".$data['hora_registro'];
+                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada'])." ".$data['hora_llamada'];
+                $usuario = $data['usuario'];
+                $estadoLlamada = $data['estado_llamada'];
+                $colorLlamada = $data['color_llamada'];
+                $btnEstadoLlamada = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $colorLlamada . '">' . $estadoLlamada . '</label>';
+
+                $respuesta['datos'][] = array($fechaRegistro, $usuario, $fechaLlamada, $observacion, $btnEstadoLlamada);
             }
+
+            $informacion = '<div class="row mt-10 mb-10">
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Documento de identidad:</strong> '.$documento.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Edad:</strong> '.$edad.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Telefono:</strong> '.$telefono.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Direccion:</strong> '.$direccion.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mt-10">'.$btnSemaforo.'</div>
+            </div>';
+
             $respuesta['html'] = $html;
-            $respuesta['lider'] = $lider;
+            $respuesta['informacion'] = $informacion;
+            $respuesta['elector'] = $nombre;
             mysqli_commit($mysqli);
         } else {
             $respuesta['status'] = 0;
@@ -659,6 +684,151 @@ class ModelElectores
 
         if (mysqli_num_rows($rtdo) > 0) {
             $respuesta['status'] = 1;
+            mysqli_commit($mysqli);
+        } else {
+            $respuesta['status'] = 0;
+            mysqli_rollback($mysqli);
+        }
+
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
+    public static function InitCalendar($estado, $mysqli)
+    {
+        $estado = mysqli_real_escape_string($mysqli, mb_convert_encoding($estado, 'ISO-8859-1'));
+
+        $andEstado = (!empty($estado) && $estado != 0) ? "WHERE RL.id_estado = $estado" : "";
+
+        $sql = "SELECT
+        RL.id_registro_llamada,
+        CONCAT(E.nombres,' ',E.apellidos) AS nombre,
+        E.documento,
+        E.telefono,
+        RL.observacion,
+        DATE(RL.fecha_registro) AS fecha_registro,
+        TIME_FORMAT(RL.fecha_registro, '%H:%i') AS hora_registro,
+        DATE(RL.fecha_llamada) AS fecha_llamada,
+        TIME_FORMAT(RL.fecha_llamada, '%H:%i') AS hora_llamada,
+        CONCAT(U.nombres,' ',U.apellidos) AS usuario,
+        ES.descripcion AS estado_llamada,
+        ES.color AS color_llamada
+        FROM electores E
+        JOIN semaforos S ON S.id_semaforo = E.id_semaforo
+        JOIN informacion_votaciones IV ON IV.id_informacion_votacion = E.id_informacion_votacion
+        JOIN registros_llamadas RL ON RL.id_elector = E.id_elector
+        JOIN usuarios U ON U.id_usuario = RL.id_usuario
+        JOIN estados ES ON ES.id_estado = RL.id_estado
+        $andEstado;";
+
+        $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_num_rows($rtdo) > 0) {
+            $respuesta['status'] = 1;
+            $html = "";
+            while ($data = mysqli_fetch_array($rtdo)) {
+                $fila = array();
+                $id = $data['id_registro_llamada'];
+                $nombre = $data['nombre'];
+                $documento = $data['documento'];
+                $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
+
+                $observacion = $data['observacion'];
+                $fechaRegistro = $data['fecha_registro']." ".$data['hora_registro'];
+                $fechaLlamada = $data['fecha_llamada']." ".$data['hora_llamada'];
+                $usuario = $data['usuario'];
+                $estadoLlamada = $data['estado_llamada'];
+                $colorLlamada = $data['color_llamada'];
+
+                $fila['start'] = $fechaLlamada;
+                $fila['id'] = $id;
+                $fila['title'] = $nombre." (".$documento.")";
+                $fila['color'] = $colorLlamada;
+
+                $respuesta['eventos'][] = $fila;
+            }
+            mysqli_commit($mysqli);
+        } else {
+            $respuesta['status'] = 0;
+            mysqli_rollback($mysqli);
+        }
+
+        mysqli_close($mysqli);
+        return json_encode($respuesta);
+    }
+
+    public static function VerInfoEvent($idRegistro, $mysqli)
+    {
+        require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Fechas.php');
+        $formatoFechas = new Fechas();
+        //limpiamos los datos
+        $idRegistro = mysqli_real_escape_string($mysqli, mb_convert_encoding($idRegistro, 'ISO-8859-1'));
+
+        $sql = "SELECT
+        CONCAT(E.nombres,' ',E.apellidos) AS nombre,
+        E.documento,
+        E.direccion,
+        E.telefono,
+        TIMESTAMPDIFF(YEAR, E.fecha_nacimiento, CURDATE()) AS edad,
+        RL.observacion,
+        DATE(RL.fecha_registro) AS fecha_registro,
+        TIME_FORMAT(RL.fecha_registro, '%H:%i') AS hora_registro,
+        DATE(RL.fecha_llamada) AS fecha_llamada,
+        TIME_FORMAT(RL.fecha_llamada, '%H:%i') AS hora_llamada,
+        CONCAT(U.nombres,' ',U.apellidos) AS usuario,
+        ES.descripcion AS estado_llamada,
+        ES.color AS color_llamada,
+        S.descripcion AS semaforo,
+        S.color
+        FROM electores E
+        JOIN semaforos S ON S.id_semaforo = E.id_semaforo
+        JOIN informacion_votaciones IV ON IV.id_informacion_votacion = E.id_informacion_votacion
+        JOIN registros_llamadas RL ON RL.id_elector = E.id_elector
+        JOIN usuarios U ON U.id_usuario = RL.id_usuario
+        JOIN estados ES ON ES.id_estado = RL.id_estado
+        WHERE RL.id_registro_llamada = $idRegistro;";
+        // echo $sql;exit;
+        $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_num_rows($rtdo) == 1) {
+            $respuesta['status'] = 1;
+            $informacion = "";
+            while ($data = mysqli_fetch_array($rtdo)) {
+                $nombre = $data['nombre'];
+                $documento = $data['documento'];
+                $edad = $data['edad']." AÑOS";
+                $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
+                $direccion = $data['direccion'];
+                $semaforo = $data['semaforo'];
+                $color = $data['color'];
+                $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
+
+                $observacion = $data['observacion'];
+                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro'])." ".$data['hora_registro'];
+                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada'])." ".$data['hora_llamada'];
+                $usuario = $data['usuario'];
+                $estadoLlamada = $data['estado_llamada'];
+                $colorLlamada = $data['color_llamada'];
+                $btnEstadoLlamada = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $colorLlamada . '">' . $estadoLlamada . '</label>';
+
+                $informacion = '<div class="container row mt-10 mb-10 pb-10 pt-10 text-start recuadro">
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Elector:</strong> '.$nombre.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Documento de identidad:</strong> '.$documento.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Edad:</strong> '.$edad.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Telefono:</strong> '.$telefono.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Dirección:</strong> '.$direccion.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">'.$btnSemaforo.'</div>
+                </div>';
+
+                $informacion .= '<div class="container row mt-10 mb-10 pb-10 pt-10 text-start recuadro">
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de registro de llamada:</strong> '.$fechaRegistro.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de llamada:</strong> '.$fechaLlamada.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Usuario registra llamada:</strong> '.$usuario.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Observación:</strong> '.$observacion.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">'.$btnEstadoLlamada.'</div>
+                </div>';
+            }
+            $respuesta['informacion'] = $informacion;
             mysqli_commit($mysqli);
         } else {
             $respuesta['status'] = 0;

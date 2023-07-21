@@ -845,3 +845,7 @@ a {
 .swal2-html-container p{
     margin-bottom: 5px;
 }
+
+.timepicker-ui-keyboard-icon, .timepicker-ui-keyboard-icon.mobile{
+    color: #fff !important;
+}

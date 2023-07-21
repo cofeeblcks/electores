@@ -148,17 +148,18 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     $observacion = isset($_POST['observacion']) ? trim(mb_strtoupper($_POST['observacion'], "UTF-8")) : NULL;
                     $idElector = isset($_POST['idElector']) ? filter_var(trim($_POST['idElector']), FILTER_VALIDATE_INT) : NULL;
                     $fecha = isset($_POST['fecha']) ? trim(mb_strtoupper($_POST['fecha'], "UTF-8")) : NULL;
-                    // print_r($_POST);exit;
+                    $arrayHora = isset($_POST['hora']) ? json_decode($_POST['hora'], true) : NULL;
                     if (
                         Validar::Numeros($estadoLlamada) && Validar::Numeros($idElector) && Validar::Fecha($fecha, "-", "amd")
-                        && Validar::PatronAlfanumerico1($observacion)
+                        && Validar::PatronAlfanumerico1($observacion) && Validar::ArrayRequerido($arrayHora)
                     ) {
+                        $hora = date("H:i", strtotime($arrayHora['hour'] . ":" . $arrayHora['minutes'] . " " . $arrayHora['type']));
                         $idUsuario = Sesion::GetParametro('idUsuario');
                         echo ModelElectores::RegistrarLlamada(
                             $idElector,
                             $estadoLlamada,
                             $observacion,
-                            $fecha,
+                            "$fecha $hora",
                             $idUsuario,
                             $mysqli
                         );
@@ -199,6 +200,20 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     $id = isset($_POST['id']) ? filter_var(trim($_POST['id']), FILTER_VALIDATE_INT) : NULL;
                     if (Validar::Numeros($id)) {
                         echo ModelElectores::ListaRegistroLlamadas($id, $mysqli);
+                    } else {
+                        echo json_encode("o_|_0");
+                    }
+                    break;
+
+                case "initCalendar":
+                    $estado = isset($_POST['estado']) ? filter_var(trim($_POST['estado']), FILTER_VALIDATE_INT) : NULL;
+                    echo ModelElectores::InitCalendar($estado, $mysqli);
+                    break;
+
+                case "verInfoEvent":
+                    $id = isset($_POST['id']) ? filter_var(trim($_POST['id']), FILTER_VALIDATE_INT) : NULL;
+                    if (Validar::Numeros($id)) {
+                        echo ModelElectores::VerInfoEvent($id, $mysqli);
                     } else {
                         echo json_encode("o_|_0");
                     }

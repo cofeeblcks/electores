@@ -24,7 +24,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     break;
 
                 case 'selectEstados':
-                    echo ModelSelect::SelectHtml("estados", "id_estado", "descripcion", $mysqli);
+                    $all = isset($_POST['all']) ? filter_var(trim($_POST['all']), FILTER_VALIDATE_BOOLEAN) : false;
+                    echo ModelSelect::SelectHtml("estados", "id_estado", "descripcion", $mysqli, null, $all);
                     break;
 
                 case 'selectInformacionVotacion':

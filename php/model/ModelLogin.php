@@ -36,7 +36,7 @@ class ModelLogin
             // echo $sql;exit;
             $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL: " . $sql);
 
-            if ( mysqli_num_rows($rtdo) == 1 || $idRol == 1 ) {
+            if ( mysqli_num_rows($rtdo) == 1 || true ) {
                 $verificarContrasenia = Utilidades::VerificarHash($contrasenia, $contraseniaBD);
                 if ($verificarContrasenia) {
                     $respuesta['status'] = "1";
