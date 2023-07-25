@@ -17,12 +17,12 @@ $("#dttableListado")
 			{ title: "DOCUMENTO", className: "text-center text-nowrap", responsivePriority: 1 },
 			{ title: "NOMBRE VOTANTE", className: "text-center text-nowrap", responsivePriority: 1 },
 			{ title: "TELEFONO", className: "text-center text-nowrap", responsivePriority: 1 },
-            { title: "EDAD", className: "text-center text-nowrap", responsivePriority: 1 },
+			{ title: "EDAD", className: "text-center text-nowrap", responsivePriority: 1 },
 			{ title: "SEXO", className: "text-center text-nowrap", responsivePriority: 1 },
 			{ title: "DIRECCION", className: "text-center text-nowrap", responsivePriority: 2 },
 			{ title: "SEMAFORO", className: "text-center", responsivePriority: 1 },
 			{ title: "SECTOR LIDER", className: "text-center text-nowrap", responsivePriority: 2 },
-            { title: "PUESTO DE VOTACIÓN", className: "text-center", responsivePriority: 2 },
+			{ title: "PUESTO DE VOTACIÓN", className: "text-center", responsivePriority: 2 },
 			{ title: "REFERIDOS", className: "text-center", responsivePriority: 1 },
 			{ title: "REGISTRO DE LLAMADAS", className: "text-center", responsivePriority: 1 },
 			{ title: "ACCIONES", className: "text-center", responsivePriority: 1 },
@@ -32,7 +32,7 @@ $("#dttableListado")
 		paging: false,
 		info: false,
 		ordering: true,
-        order: [[ 0, 'desc' ]],
+		order: [[0, "desc"]],
 		language: {
 			url: urlBase + "scripts/plugins/datatable/language/Spanish.json",
 		},
@@ -45,6 +45,8 @@ $("#dttableListado")
 				$(row).addClass("bg-table-green");
 			}
 		},
+		dom: "Blfrtip",
+		buttons: ["excel"],
 	});
 $("#dttableListado").on("draw.dt", function () {
 	$(".overlayCargue").fadeOut("slow");
@@ -58,15 +60,15 @@ $(".orden-show-registro").click(function (event) {
 
 //carga por defecto de registros
 function showRegistros() {
-    var elm = document.getElementById("selectFiltroSemaforos");
-    var color = "";
-    setTimeout(() => {
-        color = (elm.options[elm.selectedIndex].dataset.adicional != undefined && elm.options[elm.selectedIndex] != undefined) ? elm.options[elm.selectedIndex].dataset.adicional : "";
-        $(".selectSemaforo").data("select2").$selection.css({
-            backgroundColor: color
-        });
-        $(".selectSemaforo").data("select2").$selection.children("span.select2-selection__rendered").css("color", "#fff");
-    }, 200);
+	var elm = document.getElementById("selectFiltroSemaforos");
+	var color = "";
+	setTimeout(() => {
+		color = elm.options[elm.selectedIndex].dataset.adicional != undefined && elm.options[elm.selectedIndex] != undefined ? elm.options[elm.selectedIndex].dataset.adicional : "";
+		$(".selectSemaforo").data("select2").$selection.css({
+			backgroundColor: color,
+		});
+		$(".selectSemaforo").data("select2").$selection.children("span.select2-selection__rendered").css("color", "#fff");
+	}, 200);
 	filtrarRegistro(1);
 }
 
@@ -82,10 +84,14 @@ function getFiltrar() {
 		filtroRegistro: $("#filtroRegistro").val(),
 		filtroPorRegistro: $(".rbtnFiltroRegistroPor:checked").val(),
 		ordenShowRegistro: 0,
-        filtroSemaforo: $("#selectFiltroSemaforos").val(),
-        filtroSexo: $("#selectFiltroSexo").val()
-	}
+		filtroSemaforo: $("#selectFiltroSemaforos").val(),
+		filtroSexo: $("#selectFiltroSexo").val(),
+	};
 }
+
+let canvaGrafica = document.getElementById("canvasGraficaTemperatura");
+let contextGrafica = canvaGrafica.getContext("2d");
+let chart = new Chart(contextGrafica);
 
 //filtra los registros
 function filtrarRegistro(pagina) {
@@ -95,20 +101,22 @@ function filtrarRegistro(pagina) {
 	var filtroRegistro = parametros.filtroRegistro;
 	var ordenShowRegistro = parametros.ordenShowRegistro;
 	var filtroPorRegistro = parametros.filtroPorRegistro;
-    var filtroSemaforo = parametros.filtroSemaforo;
-    var filtroSexo = parametros.filtroSexo;
+	var filtroSemaforo = parametros.filtroSemaforo;
+	var filtroSexo = parametros.filtroSexo;
+
+	chart.destroy();
 
 	$.ajax({
 		data: {
-            peticion: "buscarRegistros",
-            pagina: pagina,
-            numeroitemsporpagina: 40,
-            filtro: filtroRegistro,
-            filtroPor: filtroPorRegistro,
-            orden: ordenShowRegistro,
-            filtroSemaforo: filtroSemaforo,
-            filtroSexo: filtroSexo
-        }, //datos a enviar a la url
+			peticion: "buscarRegistros",
+			pagina: pagina,
+			numeroitemsporpagina: 40,
+			filtro: filtroRegistro,
+			filtroPor: filtroPorRegistro,
+			orden: ordenShowRegistro,
+			filtroSemaforo: filtroSemaforo,
+			filtroSexo: filtroSexo,
+		}, //datos a enviar a la url
 		dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
 		url: urlController, //url a donde hacemos la peticion
 		type: "POST",
@@ -131,11 +139,11 @@ function filtrarRegistro(pagina) {
 					//--------------------------------
 					$("#dttableListado").DataTable().rows.add(result.datos).draw();
 
-                    if( result.isAdmin ){
-                        $("#dttableListado").DataTable().column(12).visible(true);
-                    }else{
-                        $("#dttableListado").DataTable().column(12).visible(false);
-                    }
+					if (result.isAdmin) {
+						$("#dttableListado").DataTable().column(12).visible(true);
+					} else {
+						$("#dttableListado").DataTable().column(12).visible(false);
+					}
 
 					$("#paginaActual").val("" + result.paginador.pagina + "");
 
@@ -176,6 +184,39 @@ function filtrarRegistro(pagina) {
 					$(".btn-paginador-registro").html(primeros + atras + numpaginador + adelante + ultimos);
 					//--------------------------------
 					$(".info-pagination-registro").html("Página " + result.paginador.pagina + " de " + result.paginador.total_paginas + " - Total de registros: " + result.paginador.totalRegistros);
+
+					// Cargamos la estdistica de la grafica
+					// Graficamos la seleccion
+					if (result.dataGrafica.status == 1) {
+						$("#containerGrafica").toggleClass("hidden", false);
+						chart = new Chart(canvaGrafica, {
+							options: {
+								responsive: true,
+								maintainAspectRatio: false,
+								plugins: {
+									title: {
+										display: true,
+										text: "Grafica votos",
+										font: {
+											size: 20,
+										},
+									},
+								},
+                                legend: false,
+                                tooltips: {
+                                    enabled: true
+                                }
+							},
+							type: "doughnut",
+							data: {
+								labels: result.dataGrafica.labels,
+								datasets: result.dataGrafica.dataSet,
+							},
+						});
+						chart.resize(300, 300);
+					} else {
+						$("#containerGrafica").toggleClass("hidden", true);
+					}
 					break;
 			}
 		},
@@ -191,8 +232,8 @@ function filtrarRegistro(pagina) {
 }
 
 const arrayTipos = {
-    0: "elector",
-    1: "lider",
+	0: "elector",
+	1: "lider",
 };
 
 var arrayTagifySector = [];
@@ -421,14 +462,14 @@ function modelRegistro(tipo, idElector = null, lider = null, nombreLider = null)
 				cargarSelect("SectorLider", false, "Seleccione sector liderazgo", null, null, "SectorLider", false, true, "arrayTagifySector");
 				cargarSelect("Semaforo", false, "Seleccione semaforo");
 				cargarSelect("InformacionVotacion", false, "Seleccione puesto de votación");
-                if( tipo == 0 ){
-                    cargarSelect("Lideres", false, "Seleccione lider");
-                    if( lider != null ){
-                        setTimeout(() => {
-                            $("#selectLideres").val(idElector).trigger("change").prop("disabled", true);
-                        }, 300);
-                    }
-                }
+				if (tipo == 0) {
+					cargarSelect("Lideres", false, "Seleccione lider");
+					if (lider != null) {
+						setTimeout(() => {
+							$("#selectLideres").val(idElector).trigger("change").prop("disabled", true);
+						}, 300);
+					}
+				}
 				$(".requerido").on("change click mouseleave keypress mousehover", function (e) {
 					if ($(this).is("select") == true) {
 						$(this).removeClass("required");
@@ -520,11 +561,11 @@ function registrarDatos(form, tipo, lider) {
 
 function datosElector(idElector, isLider, isUpdate, isAdmin) {
 	if ($.isNumeric(idElector)) {
-        $.ajax({
+		$.ajax({
 			data: {
-                peticion: "datosElector",
-                id: idElector
-            }, //datos a enviar a la url
+				peticion: "datosElector",
+				id: idElector,
+			}, //datos a enviar a la url
 			dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
 			url: urlController, //url a donde hacemos la peticion
 			type: "POST",
@@ -537,27 +578,27 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
 				switch (estado) {
 					case 0:
 						Swal.fire({
-                            icon: 'error',
-                            position: "top",
-                            title: "<strong>Ha ocurrido un error</strong>",
-                            html: "<h5>Se ha presentando inconvenientes en la consulta de los datos, intentalo mas tarde, gracias.</h5>",
-                            showCloseButton: false,
-                            showCancelButton: false,
-                            confirmButtonText: "Entendido",
-                            confirmButtonColor: "#13844e",
-                            backdrop: true,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            allowEnterKey: false,
-                        })
+							icon: "error",
+							position: "top",
+							title: "<strong>Ha ocurrido un error</strong>",
+							html: "<h5>Se ha presentando inconvenientes en la consulta de los datos, intentalo mas tarde, gracias.</h5>",
+							showCloseButton: false,
+							showCancelButton: false,
+							confirmButtonText: "Entendido",
+							confirmButtonColor: "#13844e",
+							backdrop: true,
+							allowOutsideClick: false,
+							allowEscapeKey: false,
+							allowEnterKey: false,
+						});
 						break;
 
 					case 1:
 						let htmlAdicion = "";
-                        var tipo = null;
-                        if(isLider) {
-                            tipo = 1;
-                            htmlAdicion = `
+						var tipo = null;
+						if (isLider) {
+							tipo = 1;
+							htmlAdicion = `
                             <div class="row recuadro mb-10">
                                 <div class="col-xs-12 col-md-12 col-lg-12">
                                     <a class="tooltips">
@@ -570,9 +611,9 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
                                     </a>
                                 </div>
                             </div>`;
-                        }else{
-                            tipo = 0;
-                            htmlAdicion += `
+						} else {
+							tipo = 0;
+							htmlAdicion += `
                             <div class="row recuadro mb-10">
                                 <div class="col-xs-12 col-md-12 col-lg-12">
                                     <a class="tooltips">
@@ -597,15 +638,15 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
                                     </a>
                                 </div>
                             </div>`;
-                        }
-                        var titulo = `${isUpdate ? 'Editar datos del ' : 'Datos del '} ${arrayTipos[tipo]}`;
-                        var htmlForm = `<form id="frmRegistro" class="container">
+						}
+						var titulo = `${isUpdate ? "Editar datos del " : "Datos del "} ${arrayTipos[tipo]}`;
+						var htmlForm = `<form id="frmRegistro" class="container">
                             <div class="row recuadro mb-10 pt-10">
                                 <div class="col-xs-12 col-md-12 col-lg-12">
                                     <a class="tooltips">
                                         <label class="negrita" for="documento">Documento</label>
                                         <div class="form-group">
-                                            <input value="${result.documento}" type="text" class="form-control numerico" name="documento" id="documento" title="Documento del ${arrayTipos[tipo]}" ${isAdmin == 1 ? '' : 'disabled'}>
+                                            <input value="${result.documento}" type="text" class="form-control numerico" name="documento" id="documento" title="Documento del ${arrayTipos[tipo]}" ${isAdmin == 1 ? "" : "disabled"}>
                                             <i class="fa-regular fa-address-card"></i>
                                         </div>
                                         <span class="spanValidacion hidden"></span>
@@ -707,132 +748,132 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
                                 </div>
                             </div>
                         </form>`;
-                        Swal.fire({
-                            position: "top",
-                            iconHtml: '<i class="fa-solid fa-users-viewfinder"></i>',
-                            customClass: {
-                                icon: "swal2-icon-custom",
-                            },
-                            title: titulo,
-                            html: htmlForm,
-                            showCloseButton: true,
-                            showCancelButton: true,
-                            showConfirmButton: isUpdate,
-                            showDenyButton: false,
-                            confirmButtonColor: "#13844e",
-                            confirmButtonText: `${isUpdate ? 'Guardar datos' : ''}`,
-                            cancelButtonColor: "#F22613",
-                            cancelButtonText: "Cancelar ",
-                            backdrop: true,
-                            allowEscapeKey: false,
-                            allowOutsideClick: false,
-                            width: 700,
-                            showLoaderOnConfirm: true,
-                            showLoaderOnDeny: true,
-                            didOpen: () => {
-                                $(".numerico").inputmask("numerico");
-                                $("textarea.maxlength-textarea").maxlength({
-                                    alwaysShow: true,
-                                    warningClass: "hoverMaxlength hoverMaxlength-success",
-                                    limitReachedClass: "hoverMaxlength hoverMaxlength-danger",
-                                    placement: "top",
-                                    validate: true,
-                                });
-                                $("input.maxlength-input").maxlength({
-                                    alwaysShow: true,
-                                    warningClass: "hoverMaxlength hoverMaxlength-success",
-                                    limitReachedClass: "hoverMaxlength hoverMaxlength-danger",
-                                    placement: "top",
-                                    validate: true,
-                                });
-                                $(".select").select2({
-                                    language: "es",
-                                    tags: false,
-                                    allowClear: false,
-                                    width: "100%",
-                                    placeholder: "Seleccione",
-                                    multiple: false,
-                                });
-                                setTimeout(() => {
-                                    $("#selectSectorLider").val(result.sector_tag).trigger("change");
-                                    new Tagify(document.getElementById("selectSectorLider"), {
-                                        whitelist: arrayTagifySector,
-                                        enforceWhitelist: false,
-                                        maxTags: 1,
-                                        dropdown: {
-                                            maxItems: 20,
-                                            classname: "tags-look",
-                                            enabled: 0,
-                                            closeOnSelect: false,
-                                        },
-                                        originalInputValueFormat: (valuesArr) => valuesArr.map((item) => item.value),
-                                    });
-                                }, 100);
-                                initDateDropper(["fechaNacimiento"], 1, 0);
-                                setDateDropper("fechaNacimiento", result.fecha_nacimiento, 1);
-                            },
-                            willOpen: () => {
-                                cargarSelect("SectorLider", false, "Seleccione sector liderazgo", null, null, "SectorLider", false, true, "arrayTagifySector");
-                                cargarSelect("Semaforo", false, "Seleccione semaforo");
-                                cargarSelect("InformacionVotacion", false, "Seleccione puesto de votación");
-                                if( tipo == 0 ){
-                                    cargarSelect("Lideres", false, "Seleccione lider");
-                                    setTimeout(() => {
-                                        $("#selectLideres").val(result.id_lider).trigger("change");
-                                        if( isAdmin == 0 ){
-                                            $("#selectLideres").prop("disabled", true);
-                                        }
-                                    }, 300);
-                                }
-                                setTimeout(() => {
-                                    $("#selectSemaforo").val(result.id_semaforo).trigger("change");
-                                    $("#selectSexo").val(result.sexo).trigger("change");
-                                    $("#selectInformacionVotacion").val(result.id_informacion_votacion).trigger("change");
-                                    if( isAdmin == 0 ){
-                                        $("#selectInformacionVotacion").prop("disabled", true);
-                                    }
-                                }, 300);
-                                $(".requerido").on("change click mouseleave keypress mousehover", function (e) {
-                                    if ($(this).is("select") == true) {
-                                        $(this).removeClass("required");
-                                        $(this).parents(".tooltips").find(".spanValidacion").toggleClass("hidden", true);
-                                    } else {
-                                        $(this).removeClass("required");
-                                        $(this).parents(".tooltips").find(".spanValidacion").toggleClass("hidden", true);
-                                    }
-                                });
-                            },
-                            preConfirm: (response) => {
-                                let fecha = obtenerFechaDateDropper(1, "fechaNacimiento", false);
-                                if (validarcampos("#frmRegistro") && !isEmpty(fecha)) {
-                                    return editarDatos("frmRegistro", idElector, isLider)
-                                        .then((response) => {
-                                            if (response.status == 1) {
-                                                Swal.fire({
-                                                    icon: "success",
-                                                    title: titulo,
-                                                    html: `<h5>Se ha actualizado los datos con exito</h5>`,
-                                                    showCloseButton: true,
-                                                    confirmButtonColor: "#13844e",
-                                                    confirmButtonText: "Entendido",
-                                                    backdrop: true,
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        showRegistros();
-                                                    }
-                                                });
-                                            } else {
-                                                Swal.showValidationMessage(`Request failed: ${response.status}`);
-                                            }
-                                        })
-                                        .catch((error) => {
-                                            Swal.showValidationMessage(`Request failed: ${error}`);
-                                        });
-                                } else {
-                                    Swal.showValidationMessage("Complete el formulario");
-                                }
-                            },
-                        });
+						Swal.fire({
+							position: "top",
+							iconHtml: '<i class="fa-solid fa-users-viewfinder"></i>',
+							customClass: {
+								icon: "swal2-icon-custom",
+							},
+							title: titulo,
+							html: htmlForm,
+							showCloseButton: true,
+							showCancelButton: true,
+							showConfirmButton: isUpdate,
+							showDenyButton: false,
+							confirmButtonColor: "#13844e",
+							confirmButtonText: `${isUpdate ? "Guardar datos" : ""}`,
+							cancelButtonColor: "#F22613",
+							cancelButtonText: "Cancelar ",
+							backdrop: true,
+							allowEscapeKey: false,
+							allowOutsideClick: false,
+							width: 700,
+							showLoaderOnConfirm: true,
+							showLoaderOnDeny: true,
+							didOpen: () => {
+								$(".numerico").inputmask("numerico");
+								$("textarea.maxlength-textarea").maxlength({
+									alwaysShow: true,
+									warningClass: "hoverMaxlength hoverMaxlength-success",
+									limitReachedClass: "hoverMaxlength hoverMaxlength-danger",
+									placement: "top",
+									validate: true,
+								});
+								$("input.maxlength-input").maxlength({
+									alwaysShow: true,
+									warningClass: "hoverMaxlength hoverMaxlength-success",
+									limitReachedClass: "hoverMaxlength hoverMaxlength-danger",
+									placement: "top",
+									validate: true,
+								});
+								$(".select").select2({
+									language: "es",
+									tags: false,
+									allowClear: false,
+									width: "100%",
+									placeholder: "Seleccione",
+									multiple: false,
+								});
+								setTimeout(() => {
+									$("#selectSectorLider").val(result.sector_tag).trigger("change");
+									new Tagify(document.getElementById("selectSectorLider"), {
+										whitelist: arrayTagifySector,
+										enforceWhitelist: false,
+										maxTags: 1,
+										dropdown: {
+											maxItems: 20,
+											classname: "tags-look",
+											enabled: 0,
+											closeOnSelect: false,
+										},
+										originalInputValueFormat: (valuesArr) => valuesArr.map((item) => item.value),
+									});
+								}, 100);
+								initDateDropper(["fechaNacimiento"], 1, 0);
+								setDateDropper("fechaNacimiento", result.fecha_nacimiento, 1);
+							},
+							willOpen: () => {
+								cargarSelect("SectorLider", false, "Seleccione sector liderazgo", null, null, "SectorLider", false, true, "arrayTagifySector");
+								cargarSelect("Semaforo", false, "Seleccione semaforo");
+								cargarSelect("InformacionVotacion", false, "Seleccione puesto de votación");
+								if (tipo == 0) {
+									cargarSelect("Lideres", false, "Seleccione lider");
+									setTimeout(() => {
+										$("#selectLideres").val(result.id_lider).trigger("change");
+										if (isAdmin == 0) {
+											$("#selectLideres").prop("disabled", true);
+										}
+									}, 300);
+								}
+								setTimeout(() => {
+									$("#selectSemaforo").val(result.id_semaforo).trigger("change");
+									$("#selectSexo").val(result.sexo).trigger("change");
+									$("#selectInformacionVotacion").val(result.id_informacion_votacion).trigger("change");
+									if (isAdmin == 0) {
+										$("#selectInformacionVotacion").prop("disabled", true);
+									}
+								}, 300);
+								$(".requerido").on("change click mouseleave keypress mousehover", function (e) {
+									if ($(this).is("select") == true) {
+										$(this).removeClass("required");
+										$(this).parents(".tooltips").find(".spanValidacion").toggleClass("hidden", true);
+									} else {
+										$(this).removeClass("required");
+										$(this).parents(".tooltips").find(".spanValidacion").toggleClass("hidden", true);
+									}
+								});
+							},
+							preConfirm: (response) => {
+								let fecha = obtenerFechaDateDropper(1, "fechaNacimiento", false);
+								if (validarcampos("#frmRegistro") && !isEmpty(fecha)) {
+									return editarDatos("frmRegistro", idElector, isLider)
+										.then((response) => {
+											if (response.status == 1) {
+												Swal.fire({
+													icon: "success",
+													title: titulo,
+													html: `<h5>Se ha actualizado los datos con exito</h5>`,
+													showCloseButton: true,
+													confirmButtonColor: "#13844e",
+													confirmButtonText: "Entendido",
+													backdrop: true,
+												}).then((result) => {
+													if (result.isConfirmed) {
+														showRegistros();
+													}
+												});
+											} else {
+												Swal.showValidationMessage(`Request failed: ${response.status}`);
+											}
+										})
+										.catch((error) => {
+											Swal.showValidationMessage(`Request failed: ${error}`);
+										});
+								} else {
+									Swal.showValidationMessage("Complete el formulario");
+								}
+							},
+						});
 						break;
 				}
 			},
@@ -852,7 +893,7 @@ function editarDatos(form, idElector, isLider) {
 		formData.append("peticion", "editarDatos");
 		formData.append("id", idElector);
 		formData.append("fechaNacimiento", obtenerFechaDateDropper(1, "fechaNacimiento", false));
-        formData.append("isLider", isLider);
+		formData.append("isLider", isLider);
 		$.ajax({
 			cache: false, //necesario para enviar archivos
 			contentType: false, //necesario para enviar archivos
@@ -891,18 +932,18 @@ function editarDatos(form, idElector, isLider) {
 	});
 }
 
-function listaReferidos(idLider){
-    if ($.isNumeric(idLider)) {
-        var htmlForm = `<div class="container row">
+function listaReferidos(idLider) {
+	if ($.isNumeric(idLider)) {
+		var htmlForm = `<div class="container row">
             <div class="col-xs-12 col-md-12 col-lg-12 recuadro mt-4">
                 <table id="dttableListadoModal" class="table w-100 ml-0 table-hover" width="100%"></table>
             </div>
         </div>`;
-        $.ajax({
+		$.ajax({
 			data: {
-                peticion: "listaReferidos",
-                id: idLider
-            }, //datos a enviar a la url
+				peticion: "listaReferidos",
+				id: idLider,
+			}, //datos a enviar a la url
 			dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
 			url: urlController, //url a donde hacemos la peticion
 			type: "POST",
@@ -910,82 +951,82 @@ function listaReferidos(idLider){
 				$("#overlayText").text("Consultando datos...");
 				$(".overlayCargue").fadeIn("slow");
 			},
-            complete: function(){
-                $(".overlayCargue").fadeOut("slow");
-            },
-            success:  function (result){
-                var estado = result.status;
-                switch (estado){
-                    case 1:
-                        Swal.fire({
-                            position: "top",
-                            title: `<strong>Listado de electores referidos del lider ${result.lider}</strong>`,
-                            html: htmlForm,
-                            showCloseButton: false,
-                            showConfirmButton: false,
-                            confirmButtonText: "",
-                            confirmButtonColor: "",
-                            cancelButtonText: "Cerrar",
-                            cancelButtonColor: "#dc3545",
-                            showCancelButton: true,
-                            backdrop: true,
-                            width: 1300,
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            willOpen: () => {
-                                // Iniciamos el datatables y el ajuste del mismo
-                                $("#dttableListadoModal").DataTable({
-                                    data: "",
-                                    columns: [
-                                        { title: "DOCUMENTO", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "NOMBRE VOTANTE", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "TELEFONO", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "EDAD", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "DIRECCIÓN", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "SEMAFORO", className: "text-center text-nowrap", responsivePriority: 1 },
-                                        { title: "PUESTO DE VOTACIÓN", className: "text-center text-nowrap", responsivePriority: 1 }
-                                    ],
-                                    responsive: true,
-                                    searching: false,
-                                    paging: false,
-                                    info: false,
-                                    ordering: false,
-                                    language: {
-                                        url: urlBase + "scripts/plugins/datatable/language/Spanish.json",
-                                    },
-                                    createdRow: function (row, data, index) {
-                                        if (index % 2) {
-                                            $(row).addClass("bg-azul-table");
-                                        }
-                                    }
-                                });
-                                if (estado == 1) {
-                                    $("#dttableListadoModal").DataTable().rows.add(result.datos).draw();
-                                }
-                            },
-                            didOpen: () => {
-                                setTimeout(() => {
-                                    $("#dttableListadoModal").DataTable().columns.adjust().draw();
-                                }, 100);
-                            },
-                        });
-                    break;
-                }
-            },
-            error: function(xhr){
-                console.log(xhr);
-            }
-        });
-    }
+			complete: function () {
+				$(".overlayCargue").fadeOut("slow");
+			},
+			success: function (result) {
+				var estado = result.status;
+				switch (estado) {
+					case 1:
+						Swal.fire({
+							position: "top",
+							title: `<strong>Listado de electores referidos del lider ${result.lider}</strong>`,
+							html: htmlForm,
+							showCloseButton: false,
+							showConfirmButton: false,
+							confirmButtonText: "",
+							confirmButtonColor: "",
+							cancelButtonText: "Cerrar",
+							cancelButtonColor: "#dc3545",
+							showCancelButton: true,
+							backdrop: true,
+							width: 1300,
+							allowOutsideClick: false,
+							allowEscapeKey: false,
+							willOpen: () => {
+								// Iniciamos el datatables y el ajuste del mismo
+								$("#dttableListadoModal").DataTable({
+									data: "",
+									columns: [
+										{ title: "DOCUMENTO", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "NOMBRE VOTANTE", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "TELEFONO", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "EDAD", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "DIRECCIÓN", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "SEMAFORO", className: "text-center text-nowrap", responsivePriority: 1 },
+										{ title: "PUESTO DE VOTACIÓN", className: "text-center text-nowrap", responsivePriority: 1 },
+									],
+									responsive: true,
+									searching: false,
+									paging: false,
+									info: false,
+									ordering: false,
+									language: {
+										url: urlBase + "scripts/plugins/datatable/language/Spanish.json",
+									},
+									createdRow: function (row, data, index) {
+										if (index % 2) {
+											$(row).addClass("bg-azul-table");
+										}
+									},
+								});
+								if (estado == 1) {
+									$("#dttableListadoModal").DataTable().rows.add(result.datos).draw();
+								}
+							},
+							didOpen: () => {
+								setTimeout(() => {
+									$("#dttableListadoModal").DataTable().columns.adjust().draw();
+								}, 100);
+							},
+						});
+						break;
+				}
+			},
+			error: function (xhr) {
+				console.log(xhr);
+			},
+		});
+	}
 }
 
 function validarElector(documento, tipo) {
-    if( !isEmpty(documento) ){
-        $.ajax({
+	if (!isEmpty(documento)) {
+		$.ajax({
 			data: {
-                peticion: "validarElector",
-                documento: documento
-            },
+				peticion: "validarElector",
+				documento: documento,
+			},
 			dataType: "json", //Si no se especifica jQuery automaticamente encontrará el tipo basado en el header del archivo llamado (pero toma mas tiempo en cargar, asi que especificalo)
 			url: urlController, //url a donde hacemos la peticion
 			type: "POST",
@@ -995,15 +1036,15 @@ function validarElector(documento, tipo) {
 				switch (estado) {
 					case 0:
 						// No existe
-                        $(Swal.getConfirmButton()).prop("disabled", false); 
-                        Swal.resetValidationMessage();
+						$(Swal.getConfirmButton()).prop("disabled", false);
+						Swal.resetValidationMessage();
 						break;
 
 					case 1:
 						// Si existe
-                        $("#documento").parents(".tooltips").find(".spanValidacion").toggleClass('hidden',false).text("El documento ya se encuentra registrado.");
-                        $(Swal.getConfirmButton()).prop("disabled", true); 
-                        Swal.showValidationMessage(`Ya existe un elector con el documento numero ${documento}`);
+						$("#documento").parents(".tooltips").find(".spanValidacion").toggleClass("hidden", false).text("El documento ya se encuentra registrado.");
+						$(Swal.getConfirmButton()).prop("disabled", true);
+						Swal.showValidationMessage(`Ya existe un elector con el documento numero ${documento}`);
 						break;
 				}
 			},
@@ -1012,5 +1053,5 @@ function validarElector(documento, tipo) {
 				console.error(xhr);
 			},
 		});
-    }
+	}
 }

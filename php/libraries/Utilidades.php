@@ -1,5 +1,6 @@
 <?php
-require_once(rutaBase.'php'.DS.'vendor'.DS.'autoload.php');
+require_once(rutaBase . 'php' . DS . 'vendor' . DS . 'autoload.php');
+
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh;
@@ -53,14 +54,15 @@ class Utilidades
         return $number;
     }
 
-    public static function CadenaAleatoria($arrayCharacters = [], $length = 8){
+    public static function CadenaAleatoria($arrayCharacters = [], $length = 8)
+    {
         // 0 mayusculas
         // 1 minusculas
         // 2 numeros
         // 3 caracteres especiales
         // sin array de caracteres, combinado de los anteriores
         $permitted_chars = '';
-        if( is_array($arrayCharacters) && count($arrayCharacters) ){
+        if (is_array($arrayCharacters) && count($arrayCharacters)) {
             foreach ($arrayCharacters as $character) {
                 switch ($character) {
                     case 0:
@@ -77,10 +79,10 @@ class Utilidades
                         break;
                 }
             }
-        }else{
+        } else {
             $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ¡!#$%&/()=¿?-_*+';
         }
-        
+
         return substr(str_shuffle($permitted_chars), 0, $length);
     }
 
@@ -99,5 +101,19 @@ class Utilidades
         } else {
             return $_SERVER["REMOTE_ADDR"];
         }
+    }
+
+    public static function hexToRgb($hex, $alpha = false)
+    {
+        $hex      = str_replace('#', '', $hex);
+        $length   = strlen($hex);
+        $rgb['r'] = hexdec($length == 6 ? substr($hex, 0, 2) : ($length == 3 ? str_repeat(substr($hex, 0, 1), 2) : 0));
+        $rgb['g'] = hexdec($length == 6 ? substr($hex, 2, 2) : ($length == 3 ? str_repeat(substr($hex, 1, 1), 2) : 0));
+        $rgb['b'] = hexdec($length == 6 ? substr($hex, 4, 2) : ($length == 3 ? str_repeat(substr($hex, 2, 1), 2) : 0));
+        if ($alpha) {
+            $rgb['a'] = $alpha;
+        }
+        $txtRgb = "rgb(" . $rgb['r'] . ", " . $rgb['g'] . ", " . $rgb['b'] . ")";
+        return $txtRgb;
     }
 }

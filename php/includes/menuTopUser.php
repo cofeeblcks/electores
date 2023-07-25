@@ -15,7 +15,7 @@
                         <img class="avatar" src="img/logo/favicon.png" alt="User Avatar">
                     </a>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="javascript:;" onclick="cambiarContrasenia();"><i class="ik ik-lock dropdown-icon"></i> Cambiar contraseña</a>
+                        <!-- <a class="dropdown-item" href="javascript:;" onclick="cambiarContrasenia();"><i class="ik ik-lock dropdown-icon"></i> Cambiar contraseña</a> -->
                         <a class="dropdown-item" href="javascript:;" onclick="cerrarSesion();"><i class="ik ik-power dropdown-icon"></i> Cerrar Sesion</a>
                     </div>
                 </div>

@@ -218,6 +218,7 @@ class ModelElectores
                 $respuesta = array($esLider, $fecha, $documento, $nombre, $telefono, $edad, $sexo, $direccion, $btnSemaforo, $sector, $puestoVotacion, $estadoReferidos, $estadoLlamada, $crud);
                 $arrayrespuesta['datos'][] = $respuesta;
             }
+            $arrayrespuesta['dataGrafica'] = self::InformeGrafica($mysqli);
             $arrayrespuesta['isAdmin'] = $isAdmin;
             $arrayrespuesta['paginador'] = array(
                 'totalRegistros' => $num_total_registros,
@@ -428,7 +429,7 @@ class ModelElectores
             if (mysqli_affected_rows($mysqli) == 1) {
                 $sql = "{" . str_replace(array("\n", "\t"), "|CHIVODEV|", $sql) . "}";
                 ModelLog::Auditoria($idUsuario, "ACTUALIZA REFERIDO DEL ELECTOR: $nombres $apellidos ($documento) - SQL $sql", 2, $mysqli);
-            }else{
+            } else {
                 $sql = "INSERT INTO referidos(id_lider, id_elector)
                 SELECT (SELECT id_lider FROM lideres WHERE id_elector = $idLider), $idElector
                 WHERE NOT EXISTS (
@@ -443,7 +444,7 @@ class ModelElectores
         }
 
         $respuesta['status'] = 1;
-        
+
         mysqli_commit($mysqli);
         mysqli_close($mysqli);
         return json_encode($respuesta);
@@ -605,7 +606,7 @@ class ModelElectores
             while ($data = mysqli_fetch_array($rtdo)) {
                 $nombre = $data['nombre'];
                 $documento = $data['documento'];
-                $edad = $data['edad']." AÑOS";
+                $edad = $data['edad'] . " AÑOS";
                 $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
                 $direccion = $data['direccion'];
                 $semaforo = $data['semaforo'];
@@ -613,8 +614,8 @@ class ModelElectores
                 $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
 
                 $observacion = $data['observacion'];
-                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro'])." ".$data['hora_registro'];
-                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada'])." ".$data['hora_llamada'];
+                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro']) . " " . $data['hora_registro'];
+                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada']) . " " . $data['hora_llamada'];
                 $usuario = $data['usuario'];
                 $estadoLlamada = $data['estado_llamada'];
                 $colorLlamada = $data['color_llamada'];
@@ -624,11 +625,11 @@ class ModelElectores
             }
 
             $informacion = '<div class="row mt-10 mb-10">
-                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Documento de identidad:</strong> '.$documento.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Edad:</strong> '.$edad.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Telefono:</strong> '.$telefono.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Direccion:</strong> '.$direccion.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-12 mt-10">'.$btnSemaforo.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Documento de identidad:</strong> ' . $documento . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Edad:</strong> ' . $edad . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Telefono:</strong> ' . $telefono . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-3"><strong>Direccion:</strong> ' . $direccion . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mt-10">' . $btnSemaforo . '</div>
             </div>';
 
             $respuesta['html'] = $html;
@@ -734,15 +735,15 @@ class ModelElectores
                 $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
 
                 $observacion = $data['observacion'];
-                $fechaRegistro = $data['fecha_registro']." ".$data['hora_registro'];
-                $fechaLlamada = $data['fecha_llamada']." ".$data['hora_llamada'];
+                $fechaRegistro = $data['fecha_registro'] . " " . $data['hora_registro'];
+                $fechaLlamada = $data['fecha_llamada'] . " " . $data['hora_llamada'];
                 $usuario = $data['usuario'];
                 $estadoLlamada = $data['estado_llamada'];
                 $colorLlamada = $data['color_llamada'];
 
                 $fila['start'] = $fechaLlamada;
                 $fila['id'] = $id;
-                $fila['title'] = $nombre." (".$documento.")";
+                $fila['title'] = $nombre . " (" . $documento . ")";
                 $fila['color'] = $colorLlamada;
 
                 $respuesta['eventos'][] = $fila;
@@ -796,7 +797,7 @@ class ModelElectores
             while ($data = mysqli_fetch_array($rtdo)) {
                 $nombre = $data['nombre'];
                 $documento = $data['documento'];
-                $edad = $data['edad']." AÑOS";
+                $edad = $data['edad'] . " AÑOS";
                 $telefono = '<a class="badge bg-verde cursor-pointer" href="tel:+57' . $data['telefono'] . '" data-bs-toggle="tooltip" data-bs-placement="right" title="Llamar al elector"><i class="fa-solid fa-phone color-blanco mr-5"></i>' . $data['telefono'] . '</a>';
                 $direccion = $data['direccion'];
                 $semaforo = $data['semaforo'];
@@ -804,28 +805,28 @@ class ModelElectores
                 $btnSemaforo = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $color . '">' . $semaforo . '</label>';
 
                 $observacion = $data['observacion'];
-                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro'])." ".$data['hora_registro'];
-                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada'])." ".$data['hora_llamada'];
+                $fechaRegistro = $formatoFechas->Formato4($data['fecha_registro']) . " " . $data['hora_registro'];
+                $fechaLlamada = $formatoFechas->Formato4($data['fecha_llamada']) . " " . $data['hora_llamada'];
                 $usuario = $data['usuario'];
                 $estadoLlamada = $data['estado_llamada'];
                 $colorLlamada = $data['color_llamada'];
                 $btnEstadoLlamada = '<label class="badge cursor-pointer" style="color: #fff;background-color: ' . $colorLlamada . '">' . $estadoLlamada . '</label>';
 
                 $informacion = '<div class="container row mt-10 mb-10 pb-10 pt-10 text-start recuadro">
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Elector:</strong> '.$nombre.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Documento de identidad:</strong> '.$documento.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Edad:</strong> '.$edad.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Telefono:</strong> '.$telefono.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Dirección:</strong> '.$direccion.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">'.$btnSemaforo.'</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Elector:</strong> ' . $nombre . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Documento de identidad:</strong> ' . $documento . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Edad:</strong> ' . $edad . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Telefono:</strong> ' . $telefono . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Dirección:</strong> ' . $direccion . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">' . $btnSemaforo . '</div>
                 </div>';
 
                 $informacion .= '<div class="container row mt-10 mb-10 pb-10 pt-10 text-start recuadro">
-                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de registro de llamada:</strong> '.$fechaRegistro.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de llamada:</strong> '.$fechaLlamada.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Usuario registra llamada:</strong> '.$usuario.'</div>
-                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Observación:</strong> '.$observacion.'</div>
-                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">'.$btnEstadoLlamada.'</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de registro de llamada:</strong> ' . $fechaRegistro . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Fecha de llamada:</strong> ' . $fechaLlamada . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Usuario registra llamada:</strong> ' . $usuario . '</div>
+                <div class="col-xs-12 col-md-12 col-lg-12 mb-5"><strong>Observación:</strong> ' . $observacion . '</div>
+                    <div class="col-xs-12 col-md-12 col-lg-12 mb-5">' . $btnEstadoLlamada . '</div>
                 </div>';
             }
             $respuesta['informacion'] = $informacion;
@@ -837,5 +838,40 @@ class ModelElectores
 
         mysqli_close($mysqli);
         return json_encode($respuesta);
+    }
+
+    public static function InformeGrafica($mysqli)
+    {
+        $sql = "SELECT
+        S.descripcion AS semaforo,
+        S.color,
+        COUNT(E.id_elector) AS total
+        FROM electores E
+        JOIN semaforos S ON S.id_semaforo = E.id_semaforo
+        GROUP BY
+        S.id_semaforo;";
+        // echo $sql;exit;
+        $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
+
+        if (mysqli_num_rows($rtdo) > 0) {
+            $respuesta['status'] = 1;
+            while ($data = mysqli_fetch_array($rtdo)) {
+                $arrayLabels[] = array($data['semaforo']);
+
+                $label[] = $data['semaforo'];
+                $color[] = Utilidades::hexToRgb($data['color']);
+                $total[] = $data['total'];
+            }
+            $respuesta['dataSet'][] = array(
+                "label" => "Nada",
+                "data" => $total,
+                "backgroundColor" => $color
+            );
+            $respuesta['labels'] = $arrayLabels;
+        } else {
+            $respuesta['status'] = 0;
+        }
+
+        return $respuesta;
     }
 }

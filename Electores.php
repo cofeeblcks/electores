@@ -24,6 +24,15 @@ include_once('php/includes/template.php');
         <div class="row">
             <div class="col-md-12">
                 <div class="row">
+                    <div class="col-xs-12 col-md-12 col-lg-3 hidden" id="containerGrafica">
+                        <div class="card card-state card-state-success">
+                            <div class="card-body">
+                                <canvas id="canvasGraficaTemperatura" width="100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-xs-12 col-md-6 col-lg-3">
                         <div class="card card-state card-state-success">
                             <div class="card-header">
