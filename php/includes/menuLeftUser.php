@@ -25,6 +25,16 @@
                         <a href="Electores" class="menu-item"><i class="ik ik-corner-down-right nav-icon"></i>Electores</a>
                     </div>
                 </div>
+                <?php
+                    if (in_array(Sesion::GetParametro("rol"), array(1, 2))) {
+                        echo '<div class="nav-item has-sub text-capitalize">
+                            <a href="#"><i class="fa-solid fa-users"></i><span>Usuarios</span></a>
+                            <div class="submenu-content">
+                                <a href="Usuarios" class="menu-item"><i class="ik ik-corner-down-right nav-icon"></i>Usuarios</a>
+                            </div>
+                        </div>';
+                    }
+                ?>
             </nav>
         </div>
     </div>
