@@ -109,7 +109,7 @@ class ModelUsuarios
                 $crud = '<a class="btn-acciones cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Ver" onclick="datosEmpleado(' . $id . ',false);"><i class="ik ik-eye color-orange"></i></a>';
                 $crud .= $id != 1 ? '<a class="btn-acciones cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="left" data-bs-title="Eliminar" onclick="confirmarEliminado(' . $id . ');"><i class="ik ik-trash-2 color-rojo"></i></a>' : '';
 
-                $respuesta = array($id, $rol, $documento, $nombre, $correo, $crud);
+                $respuesta = array($id, $rol, $documento, $nombre, $correo, "");
                 $arrayrespuesta['datos'][] = $respuesta;
             }
             $arrayrespuesta['paginador'] = array(

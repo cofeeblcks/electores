@@ -140,9 +140,11 @@ function filtrarRegistro(pagina) {
 					$("#dttableListado").DataTable().rows.add(result.datos).draw();
 
 					if (result.isAdmin) {
-						$("#dttableListado").DataTable().column(12).visible(true);
+						$("#dttableListado").DataTable().column(13).visible(true);
+                        $("#dttableListado").DataTable().buttons(".buttons-excel").nodes().css("display", "block");
 					} else {
-						$("#dttableListado").DataTable().column(12).visible(false);
+						$("#dttableListado").DataTable().column(13).visible(false);
+                        $("#dttableListado").DataTable().buttons(".buttons-excel").nodes().css("display", "none");
 					}
 
 					$("#paginaActual").val("" + result.paginador.pagina + "");
@@ -596,7 +598,7 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
 					case 1:
 						let htmlAdicion = "";
 						var tipo = null;
-						if (isLider) {
+						if (isLider == 1) {
 							tipo = 1;
 							htmlAdicion = `
                             <div class="row recuadro mb-10">
@@ -808,7 +810,7 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
 										},
 										originalInputValueFormat: (valuesArr) => valuesArr.map((item) => item.value),
 									});
-								}, 100);
+								}, 200);
 								initDateDropper(["fechaNacimiento"], 1, 0);
 								setDateDropper("fechaNacimiento", result.fecha_nacimiento, 1);
 							},
@@ -823,7 +825,7 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
 										if (isAdmin == 0) {
 											$("#selectLideres").prop("disabled", true);
 										}
-									}, 300);
+									}, 400);
 								}
 								setTimeout(() => {
 									$("#selectSemaforo").val(result.id_semaforo).trigger("change");
@@ -832,7 +834,7 @@ function datosElector(idElector, isLider, isUpdate, isAdmin) {
 									if (isAdmin == 0) {
 										$("#selectInformacionVotacion").prop("disabled", true);
 									}
-								}, 300);
+								}, 400);
 								$(".requerido").on("change click mouseleave keypress mousehover", function (e) {
 									if ($(this).is("select") == true) {
 										$(this).removeClass("required");
@@ -937,6 +939,11 @@ function listaReferidos(idLider) {
 		var htmlForm = `<div class="container row">
             <div class="col-xs-12 col-md-12 col-lg-12 recuadro mt-4">
                 <table id="dttableListadoModal" class="table w-100 ml-0 table-hover" width="100%"></table>
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="mt-4 d-flex aligns-items-center justify-content-between">
+                        <div class="negrita info-pagination-registro"></div>
+                    </div>
+                </div>
             </div>
         </div>`;
 		$.ajax({
@@ -1003,6 +1010,7 @@ function listaReferidos(idLider) {
 								if (estado == 1) {
 									$("#dttableListadoModal").DataTable().rows.add(result.datos).draw();
 								}
+                                $("#dttableListadoModal").siblings("div").find(".info-pagination-registro").html("Página 1 de 1 - Total de registros: " + result.totalRegistros);
 							},
 							didOpen: () => {
 								setTimeout(() => {

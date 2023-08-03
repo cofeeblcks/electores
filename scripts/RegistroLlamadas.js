@@ -301,6 +301,11 @@ function listaRegistroLlamadas(idElector) {
                             </div>
                             <div class="col-xs-12 col-md-12 col-lg-12 recuadro mt-4">
                                 <table id="dttableListadoModal" class="table w-100 ml-0 table-hover" width="100%"></table>
+                                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="mt-4 d-flex aligns-items-center justify-content-between">
+                                        <div class="negrita info-pagination-registro"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>`;
 						Swal.fire({
@@ -346,6 +351,7 @@ function listaRegistroLlamadas(idElector) {
 								if (estado == 1) {
 									$("#dttableListadoModal").DataTable().rows.add(result.datos).draw();
 								}
+                                $("#dttableListadoModal").siblings("div").find(".info-pagination-registro").html("Página 1 de 1 - Total de registros: " + result.totalRegistros);
 							},
 							didOpen: () => {
 								setTimeout(() => {

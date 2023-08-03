@@ -14,7 +14,7 @@ class ModelElectores
         require_once(rutaBase . 'php' . DS . 'libraries' . DS . 'Fechas.php');
         $formatoFechas = new Fechas();
 
-        $isAdmin = $rol == 1 ? true : false;
+        $isAdmin = in_array($rol, array(1, 2)) ? true : false;
 
         switch ($orden) {
             case 0:
@@ -380,9 +380,10 @@ class ModelElectores
         }
 
         $updateMore = "";
-        if ($rol == 1) {
+        if ( in_array($rol, array(1, 2)) ) {
             $updateMore = "documento = '$documento',
-            id_informacion_votacion = $puestoVotacion,";
+            id_informacion_votacion = $puestoVotacion,
+            id_semaforo = $semaforo,";
         }
 
         $sql = "UPDATE electores
@@ -404,7 +405,7 @@ class ModelElectores
             ModelLog::Auditoria($idUsuario, "ACTUALIZA DATOS DEL ELECTOR: $nombres $apellidos ($documento) - SQL $sql", 2, $mysqli);
         }
 
-        if ($isLider && !empty($idSector)) {
+        if ($isLider == 1 && !empty($idSector)) {
             $sql = "UPDATE lideres
             SET
             id_sector_lider = $idSector
@@ -418,7 +419,7 @@ class ModelElectores
             }
         }
 
-        if (!$isLider) {
+        if ($isLider == 0 && !empty($idSector)) {
             $sql = "UPDATE referidos 
             SET 
             id_lider = (SELECT id_lider FROM lideres WHERE id_elector = $idLider)
@@ -536,6 +537,8 @@ class ModelElectores
 
         $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
 
+        $num_total_registros = mysqli_affected_rows($mysqli);
+
         if (mysqli_num_rows($rtdo) > 0) {
             $respuesta['status'] = 1;
             $html = "";
@@ -556,6 +559,7 @@ class ModelElectores
             }
             $respuesta['html'] = $html;
             $respuesta['lider'] = $lider;
+            $respuesta['totalRegistros'] = $num_total_registros;
             mysqli_commit($mysqli);
         } else {
             $respuesta['status'] = 0;
@@ -600,6 +604,8 @@ class ModelElectores
 
         $rtdo = mysqli_query($mysqli, $sql) or die("Error en la Consulta SQL" . $sql);
 
+        $num_total_registros = mysqli_affected_rows($mysqli);
+
         if (mysqli_num_rows($rtdo) > 0) {
             $respuesta['status'] = 1;
             $html = "";
@@ -635,6 +641,7 @@ class ModelElectores
             $respuesta['html'] = $html;
             $respuesta['informacion'] = $informacion;
             $respuesta['elector'] = $nombre;
+            $respuesta['totalRegistros'] = $num_total_registros;
             mysqli_commit($mysqli);
         } else {
             $respuesta['status'] = 0;

@@ -107,7 +107,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     $semaforo = isset($_POST['selectSemaforo']) ? filter_var(trim($_POST['selectSemaforo']), FILTER_VALIDATE_INT) : NULL;
 
                     $idLider = isset($_POST['selectLideres']) ? filter_var(trim($_POST['selectLideres']), FILTER_VALIDATE_INT) : NULL;
-                    $isLider = isset($_POST['isLider']) ? filter_var(trim($_POST['isLider']), FILTER_VALIDATE_BOOLEAN) : false;
+                    $isLider = isset($_POST['isLider']) ? filter_var(trim($_POST['isLider']), FILTER_VALIDATE_INT) : false;
 
                     $idElector = isset($_POST['id']) ? filter_var(trim($_POST['id']), FILTER_VALIDATE_INT) : NULL;
                     // print_r($_POST);exit;
